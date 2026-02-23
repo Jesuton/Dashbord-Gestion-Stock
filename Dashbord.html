@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockPilot Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    #toast {
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+  <div id="auth-page" class="min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3l8 4-8 4-8-4 8-4z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 11l8 4 8-4" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 15l8 4 8-4" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900">StockPilot Admin</h1>
+          <p class="text-sm text-slate-500">Connexion à la plateforme</p>
+        </div>
+      </div>
+      <form id="login-form" class="mt-8 space-y-4">
+        <div>
+          <label class="text-sm font-medium text-slate-600" for="login-email">Email</label>
+          <input id="login-email" type="email" autocomplete="email" required
+            class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-600" for="login-password">Mot de passe</label>
+          <input id="login-password" type="password" autocomplete="current-password" required
+            class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+        </div>
+        <p id="login-error" class="text-sm text-red-500 hidden"></p>
+        <button type="submit"
+          class="w-full rounded-xl bg-cyan-500 py-3 text-sm font-semibold text-white shadow hover:bg-cyan-600 transition">
+          Se connecter
+        </button>
+      </form>
+    </div>
+  </div>
+  <div id="app-container" class="hidden min-h-screen">
+    <div class="flex">
+      <aside class="w-64 bg-white shadow-sm border-r border-slate-100 fixed inset-y-0 left-0 flex flex-col z-30">
+        <div class="px-6 py-5 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3l8 4-8 4-8-4 8-4z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 11l8 4 8-4" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wide text-slate-400">StockPilot</p>
+              <p class="text-lg font-semibold text-slate-900">Admin Console</p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+          <button data-page="dashboard" class="nav-button w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold bg-cyan-500 text-white shadow">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            Tableau de bord
+          </button>
+          <button data-page="customers" class="nav-button w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 014-4h1M15 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            Customer
+          </button>
+        </nav>
+        <div class="px-4 pb-6">
+          <div class="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+            <p class="font-semibold text-slate-800" id="sidebar-user-name">—</p>
+            <p class="text-xs text-slate-500 mt-1" id="sidebar-user-email">—</p>
+          </div>
+          <button id="logout-button"
+            class="mt-4 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100">
+            Déconnexion
+          </button>
+        </div>
+      </aside>
+
+      <main class="flex-1 min-h-screen lg:ml-64">
+        <header class="sticky top-0 z-20 bg-slate-50/80 backdrop-blur border-b border-slate-100">
+          <div class="px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <p class="text-xs uppercase tracking-widest text-slate-400">Administration</p>
+              <h2 id="page-title" class="text-xl font-semibold text-slate-900">Tableau de bord</h2>
+            </div>
+            <div class="text-xs text-slate-500">
+              Dernière mise à jour <span id="dashboard-last-updated" class="font-semibold text-slate-700">—</span>
+            </div>
+          </div>
+        </header>
+
+        <section id="page-dashboard" class="page active p-6 lg:p-8 space-y-6">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 class="text-3xl font-bold text-slate-900">Vue d’ensemble</h1>
+              <p class="text-slate-500 mt-1">Suivi des performances globales de StockPilot.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Plateforme active
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 014-4h1M15 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <span id="stat-admin-total" class="text-2xl font-bold text-slate-900">0</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-3">Administrateurs</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7a4 4 0 108 0 4 4 0 00-8 0zM2 19a6 6 0 0112 0H2z" />
+                  </svg>
+                </div>
+                <span id="stat-admin-online" class="text-2xl font-bold text-slate-900">0</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-3">Administrateurs connectés</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h11M9 21V3m0 18l-4-4m4 4l4-4" />
+                  </svg>
+                </div>
+                <span id="stat-employees-per-admin" class="text-2xl font-bold text-slate-900">0</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-3">Employés / admin</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 1.567-3 3.5S10.343 15 12 15s3-1.567 3-3.5S13.657 8 12 8z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 18h16" />
+                  </svg>
+                </div>
+                <span id="stat-current-revenue" class="text-2xl font-bold text-slate-900">0</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-3">Chiffre d’affaires courant</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9-4 9 4-9 4-9-4zM3 7v10l9 4 9-4V7" />
+                  </svg>
+                </div>
+                <span id="stat-stores" class="text-2xl font-bold text-slate-900">0</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-3">Magasins créés</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                  </svg>
+                </div>
+                <span id="stat-boutiques" class="text-2xl font-bold text-slate-900">0</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-3">Boutiques</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-3.33 0-6 2.17-6 5v1h12v-1c0-2.83-2.67-5-6-5z" />
+                  </svg>
+                </div>
+                <span id="stat-employees-total" class="text-2xl font-bold text-slate-900">0</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-3">Total employés</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-semibold text-slate-900">Activité sur 7 jours</h2>
+                <p class="text-sm text-slate-500">Chiffre d’affaires et nouveaux clients.</p>
+              </div>
+              <div class="text-xs text-slate-500">
+                <span id="chart-total-revenue" class="font-semibold text-slate-700">0</span> sur la période
+              </div>
+            </div>
+            <div class="mt-6 relative">
+              <svg id="platform-chart" viewBox="0 0 700 260" class="w-full h-64">
+                <g stroke="#E2E8F0" stroke-width="1">
+                  <line x1="60" y1="40" x2="660" y2="40" />
+                  <line x1="60" y1="90" x2="660" y2="90" />
+                  <line x1="60" y1="140" x2="660" y2="140" />
+                  <line x1="60" y1="190" x2="660" y2="190" />
+                  <line x1="60" y1="240" x2="660" y2="240" />
+                </g>
+                <g fill="#94A3B8" font-size="12">
+                  <text id="chart-max" x="10" y="44">0</text>
+                  <text id="chart-mid" x="10" y="144">0</text>
+                  <text id="chart-min" x="20" y="244">0</text>
+                </g>
+                <polyline id="chart-revenue-line" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="" />
+                <g id="chart-revenue-dots" fill="#3B82F6"></g>
+                <polyline id="chart-company-line" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="" />
+                <g id="chart-company-dots" fill="#10B981"></g>
+                <g id="chart-x-labels" fill="#64748B" font-size="12"></g>
+              </svg>
+              <div id="chart-tooltip" class="absolute hidden rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600 shadow-lg pointer-events-none">
+                <p id="chart-tooltip-day" class="text-sm font-semibold text-slate-900">—</p>
+                <p id="chart-tooltip-revenue" class="mt-2 text-blue-600">CA : 0</p>
+                <p id="chart-tooltip-clients" class="mt-1 text-emerald-600">Nouveaux clients : 0</p>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center justify-center gap-6 text-xs text-slate-500">
+              <span class="inline-flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                Chiffre d’affaires
+              </span>
+              <span class="inline-flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Nouveaux clients
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-lg font-semibold text-slate-900">Demandes d’accès</h3>
+                  <p class="text-sm text-slate-500">Nouvelles inscriptions à valider.</p>
+                </div>
+                <span id="access-requests-count" class="text-xs font-semibold text-cyan-600 bg-cyan-50 border border-cyan-100 px-3 py-1 rounded-full">0</span>
+              </div>
+              <div id="access-requests-empty" class="mt-6 text-sm text-slate-400">Aucune demande à traiter.</div>
+              <div id="access-requests-table-wrapper" class="hidden mt-6 overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                  <thead class="bg-slate-50">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nom</th>
+                      <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Prénom</th>
+                      <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                      <th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="access-requests-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-lg font-semibold text-slate-900">Demandes de changement de plan</h3>
+                  <p class="text-sm text-slate-500">Validation des évolutions d’abonnement.</p>
+                </div>
+                <span id="plan-requests-count" class="text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">0</span>
+              </div>
+              <div id="plan-requests-empty" class="mt-6 text-sm text-slate-400">Aucune demande de plan en attente.</div>
+              <div id="plan-requests-table-wrapper" class="hidden mt-6 overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                  <thead class="bg-slate-50">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nom</th>
+                      <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Prénom</th>
+                      <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Magasins</th>
+                      <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Boutiques</th>
+                      <th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="plan-requests-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="page-customers" class="page p-6 lg:p-8 space-y-6">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 class="text-3xl font-bold text-slate-900">Customer</h1>
+              <p class="text-slate-500 mt-1">Gestion globale des clients StockPilot.</p>
+            </div>
+            <div class="w-full lg:w-80">
+              <input id="customer-search" type="text" placeholder="Rechercher un client..."
+                class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Clients</h2>
+              <div id="customer-list" class="mt-4 space-y-3"></div>
+              <div id="customer-list-empty" class="mt-4 text-sm text-slate-400">Aucun client trouvé.</div>
+            </div>
+
+            <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div id="customer-detail-empty" class="flex items-center justify-center text-slate-400 h-60">
+                Sélectionnez un client pour afficher ses informations.
+              </div>
+              <div id="customer-detail-content" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h2 id="customer-name" class="text-2xl font-bold text-slate-900">—</h2>
+                    <p id="customer-contact" class="text-sm text-slate-500">—</p>
+                  </div>
+                  <button id="manage-access-button" disabled
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-white text-sm font-semibold hover:bg-cyan-600 disabled:opacity-50">
+                    Gérer les accès
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <p class="text-xs uppercase text-slate-400">Admins</p>
+                    <p id="customer-admins-count" class="text-2xl font-semibold text-slate-900">0</p>
+                  </div>
+                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <p class="text-xs uppercase text-slate-400">Employés</p>
+                    <p id="customer-employees-count" class="text-2xl font-semibold text-slate-900">0</p>
+                  </div>
+                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <p class="text-xs uppercase text-slate-400">Magasins</p>
+                    <p id="customer-stores-count" class="text-2xl font-semibold text-slate-900">0</p>
+                  </div>
+                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <p class="text-xs uppercase text-slate-400">Boutiques</p>
+                    <p id="customer-boutiques-count" class="text-2xl font-semibold text-slate-900">0</p>
+                  </div>
+                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <p class="text-xs uppercase text-slate-400">CA courant</p>
+                    <p id="customer-revenue" class="text-2xl font-semibold text-slate-900">0</p>
+                  </div>
+                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <p class="text-xs uppercase text-slate-400">Créé le</p>
+                    <p id="customer-created" class="text-sm font-semibold text-slate-900">—</p>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-100 p-4">
+                  <h3 class="text-sm font-semibold text-slate-700">Modules activés</h3>
+                  <div id="customer-access-list" class="mt-3 flex flex-wrap gap-2 text-xs"></div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-100 p-4">
+                  <h3 class="text-sm font-semibold text-slate-700">Équipe</h3>
+                  <div id="customer-team-list" class="mt-3 space-y-2 text-sm text-slate-600"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="access-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-slate-900">Gérer les accès</h3>
+        <button id="access-modal-close" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <p class="text-sm text-slate-500 mt-1">Attribuez les fonctionnalités disponibles pour ce client.</p>
+      <div id="access-modal-list" class="mt-4 space-y-3"></div>
+      <div class="mt-6 flex gap-3">
+        <button id="access-modal-cancel" class="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">Annuler</button>
+        <button id="access-modal-save" class="flex-1 rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-600">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 z-50">
+    <div class="flex items-center gap-2 rounded-xl bg-emerald-500 text-white px-4 py-3 text-sm font-semibold shadow">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span id="toast-message">Action réalisée.</span>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
+    import { getDatabase, ref, onValue, off, update, set, remove, onDisconnect } from "firebase/database";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB65Iye8YMpxXsPthdBYmNojBMpaTPZS3A",
+      authDomain: "gestion-stock-c9484.firebaseapp.com",
+      databaseURL: "https://gestion-stock-c9484-default-rtdb.firebaseio.com",
+      projectId: "gestion-stock-c9484",
+      storageBucket: "gestion-stock-c9484.firebasestorage.app",
+      messagingSenderId: "834033352449",
+      appId: "1:834033352449:web:b86ff5b60c816bb469e500",
+      measurementId: "G-5VKP3S88F8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const PLATFORM_FEATURES = [
+      { id: 'tableau_de_bord', label: 'Tableau de bord' },
+      { id: 'ventes', label: 'Ventes' },
+      { id: 'historique_ventes', label: 'Historique des ventes' },
+      { id: 'stock_boutique', label: 'Stock Boutique' },
+      { id: 'mon_magasin', label: 'Mon Magasin' },
+      { id: 'mouvements_magasin', label: 'Mouvements Magasin' },
+      { id: 'statistiques', label: 'Statistiques' },
+      { id: 'parametres', label: 'Paramètres' }
+    ];
+
+    const state = {
+      companies: {},
+      accessRequests: {},
+      planRequests: {},
+      platformMetrics: {},
+      platformUsers: {},
+      presence: {}
+    };
+
+    let currentUser = null;
+    let currentPage = 'dashboard';
+    let selectedCompanyId = null;
+    let presenceInterval = null;
+
+    const authPage = document.getElementById('auth-page');
+    const appContainer = document.getElementById('app-container');
+    const loginForm = document.getElementById('login-form');
+    const loginEmail = document.getElementById('login-email');
+    const loginPassword = document.getElementById('login-password');
+    const loginError = document.getElementById('login-error');
+    const logoutButton = document.getElementById('logout-button');
+    const navButtons = document.querySelectorAll('.nav-button');
+    const pageTitle = document.getElementById('page-title');
+    const dashboardLastUpdated = document.getElementById('dashboard-last-updated');
+    const sidebarUserName = document.getElementById('sidebar-user-name');
+    const sidebarUserEmail = document.getElementById('sidebar-user-email');
+
+    const statAdminTotal = document.getElementById('stat-admin-total');
+    const statAdminOnline = document.getElementById('stat-admin-online');
+    const statEmployeesPerAdmin = document.getElementById('stat-employees-per-admin');
+    const statCurrentRevenue = document.getElementById('stat-current-revenue');
+    const statStores = document.getElementById('stat-stores');
+    const statBoutiques = document.getElementById('stat-boutiques');
+    const statEmployeesTotal = document.getElementById('stat-employees-total');
+
+    const chartTotalRevenue = document.getElementById('chart-total-revenue');
+    const chartMax = document.getElementById('chart-max');
+    const chartMid = document.getElementById('chart-mid');
+    const chartMin = document.getElementById('chart-min');
+    const chartRevenueLine = document.getElementById('chart-revenue-line');
+    const chartRevenueDots = document.getElementById('chart-revenue-dots');
+    const chartCompanyLine = document.getElementById('chart-company-line');
+    const chartCompanyDots = document.getElementById('chart-company-dots');
+    const chartXLabels = document.getElementById('chart-x-labels');
+    const chartTooltip = document.getElementById('chart-tooltip');
+    const chartTooltipDay = document.getElementById('chart-tooltip-day');
+    const chartTooltipRevenue = document.getElementById('chart-tooltip-revenue');
+    const chartTooltipClients = document.getElementById('chart-tooltip-clients');
+    const platformChart = document.getElementById('platform-chart');
+
+    const accessRequestsCount = document.getElementById('access-requests-count');
+    const accessRequestsEmpty = document.getElementById('access-requests-empty');
+    const accessRequestsTableWrapper = document.getElementById('access-requests-table-wrapper');
+    const accessRequestsTbody = document.getElementById('access-requests-tbody');
+
+    const planRequestsCount = document.getElementById('plan-requests-count');
+    const planRequestsEmpty = document.getElementById('plan-requests-empty');
+    const planRequestsTableWrapper = document.getElementById('plan-requests-table-wrapper');
+    const planRequestsTbody = document.getElementById('plan-requests-tbody');
+
+    const customerSearch = document.getElementById('customer-search');
+    const customerList = document.getElementById('customer-list');
+    const customerListEmpty = document.getElementById('customer-list-empty');
+    const customerDetailEmpty = document.getElementById('customer-detail-empty');
+    const customerDetailContent = document.getElementById('customer-detail-content');
+    const customerName = document.getElementById('customer-name');
+    const customerContact = document.getElementById('customer-contact');
+    const customerAdminsCount = document.getElementById('customer-admins-count');
+    const customerEmployeesCount = document.getElementById('customer-employees-count');
+    const customerStoresCount = document.getElementById('customer-stores-count');
+    const customerBoutiquesCount = document.getElementById('customer-boutiques-count');
+    const customerRevenue = document.getElementById('customer-revenue');
+    const customerCreated = document.getElementById('customer-created');
+    const customerAccessList = document.getElementById('customer-access-list');
+    const customerTeamList = document.getElementById('customer-team-list');
+    const manageAccessButton = document.getElementById('manage-access-button');
+
+    const accessModal = document.getElementById('access-modal');
+    const accessModalList = document.getElementById('access-modal-list');
+    const accessModalClose = document.getElementById('access-modal-close');
+    const accessModalCancel = document.getElementById('access-modal-cancel');
+    const accessModalSave = document.getElementById('access-modal-save');
+
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    function showToast(message, tone = 'success') {
+      if (!toast || !toastMessage) return;
+      toastMessage.textContent = message;
+      const wrapper = toast.firstElementChild;
+      if (wrapper) {
+        wrapper.classList.remove('bg-emerald-500', 'bg-red-500', 'bg-amber-500');
+        if (tone === 'error') wrapper.classList.add('bg-red-500');
+        else if (tone === 'warn') wrapper.classList.add('bg-amber-500');
+        else wrapper.classList.add('bg-emerald-500');
+      }
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function setActivePage(page) {
+      currentPage = page;
+      document.querySelectorAll('.page').forEach(section => {
+        section.classList.toggle('active', section.id === `page-${page}`);
+      });
+      navButtons.forEach(button => {
+        const isActive = button.dataset.page === page;
+        button.classList.toggle('bg-cyan-500', isActive);
+        button.classList.toggle('text-white', isActive);
+        button.classList.toggle('shadow', isActive);
+        button.classList.toggle('text-slate-600', !isActive);
+        if (!isActive) button.classList.remove('bg-cyan-500', 'text-white', 'shadow');
+      });
+      if (pageTitle) pageTitle.textContent = page === 'customers' ? 'Customer' : 'Tableau de bord';
+    }
+
+    function formatNumber(value) {
+      if (value === null || value === undefined || Number.isNaN(value)) return '0';
+      return new Intl.NumberFormat('fr-FR').format(value);
+    }
+
+    function formatCurrency(value) {
+      if (value === null || value === undefined || Number.isNaN(value)) return '0 FCFA';
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(value);
+    }
+
+    function toDate(value) {
+      if (!value) return null;
+      if (value instanceof Date) return value;
+      if (typeof value === 'number') return new Date(value);
+      if (typeof value === 'string') {
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+      }
+      if (value.seconds) return new Date(value.seconds * 1000);
+      return null;
+    }
+
+    function toDateKey(date) {
+      if (!date) return '';
+      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      return d.toISOString().slice(0, 10);
+    }
+
+    function getCompanyName(company, fallback = 'Client') {
+      return company?.companyName || company?.name || company?.displayName || fallback;
+    }
+
+    function getMembers(company) {
+      const members = company?.members || {};
+      return Object.values(members).filter(member => member && (member.fullName || member.name || member.email));
+    }
+
+    function computeRevenueFromSales(company) {
+      const salesHistory = company?.salesHistory || {};
+      return Object.values(salesHistory).reduce((sum, sale) => {
+        const amount = parseFloat(sale?.totalAmount ?? sale?.total ?? sale?.amount ?? 0);
+        return sum + (Number.isFinite(amount) ? amount : 0);
+      }, 0);
+    }
+
+    function computeCompanyStats() {
+      const companies = Object.values(state.companies || {});
+      let admins = 0;
+      let employees = 0;
+      let stores = 0;
+      let boutiques = 0;
+      let revenue = 0;
+
+      companies.forEach(company => {
+        const members = company?.members || {};
+        const memberList = Object.values(members);
+        const adminCount = memberList.filter(member => (member?.role || '').toLowerCase() === 'admin').length;
+        const employeeCount = memberList.filter(member => (member?.role || '').toLowerCase() !== 'admin').length;
+        admins += adminCount;
+        employees += employeeCount;
+
+        stores += Object.keys(company?.stores || {}).length;
+
+        const boutiqueCount = Object.keys(company?.boutiques || {}).length;
+        if (boutiqueCount > 0) boutiques += boutiqueCount;
+        else if (company?.shopStock) boutiques += 1;
+
+        if (company?.billing?.currentRevenue) revenue += parseFloat(company.billing.currentRevenue) || 0;
+        else if (company?.billing?.monthlyRevenue) revenue += parseFloat(company.billing.monthlyRevenue) || 0;
+        else revenue += computeRevenueFromSales(company);
+      });
+
+      const adminsPlatform = Object.keys(state.platformUsers || {}).length;
+      const totalAdmins = adminsPlatform > 0 ? adminsPlatform : admins;
+
+      return {
+        admins: totalAdmins,
+        adminsFromCompanies: admins,
+        employees,
+        stores,
+        boutiques,
+        revenue
+      };
+    }
+
+    function updateLastUpdated() {
+      if (!dashboardLastUpdated) return;
+      const now = new Date();
+      dashboardLastUpdated.textContent = now.toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+    let chartDataCache = { labels: [], revenue: [], companies: [] };
+
+    function renderStats() {
+      const stats = computeCompanyStats();
+      const adminsOnline = Object.values(state.presence || {}).filter(entry => entry && (entry.role === 'admin' || entry.isAdmin)).length;
+      const adminTotal = stats.admins || 0;
+      const employeesTotal = stats.employees || 0;
+      const employeesPerAdmin = adminTotal > 0 ? (employeesTotal / adminTotal) : 0;
+
+      const revenueValue = state.platformMetrics?.currentRevenue ?? stats.revenue ?? 0;
+
+      if (statAdminTotal) statAdminTotal.textContent = formatNumber(adminTotal);
+      if (statAdminOnline) statAdminOnline.textContent = formatNumber(adminsOnline);
+      if (statEmployeesPerAdmin) statEmployeesPerAdmin.textContent = employeesPerAdmin ? employeesPerAdmin.toFixed(1) : '0';
+      if (statCurrentRevenue) statCurrentRevenue.textContent = formatCurrency(revenueValue);
+      if (statStores) statStores.textContent = formatNumber(stats.stores);
+      if (statBoutiques) statBoutiques.textContent = formatNumber(stats.boutiques);
+      if (statEmployeesTotal) statEmployeesTotal.textContent = formatNumber(employeesTotal);
+    }
+
+    function renderChart() {
+      if (!platformChart) return;
+
+      const now = new Date();
+      const days = [];
+      for (let i = 6; i >= 0; i -= 1) {
+        const day = new Date(now);
+        day.setDate(now.getDate() - i);
+        day.setHours(0, 0, 0, 0);
+        days.push(day);
+      }
+
+      const revenueByDay = {};
+      const companiesByDay = {};
+
+      Object.values(state.companies || {}).forEach(company => {
+        const salesHistory = company?.salesHistory || {};
+        Object.values(salesHistory).forEach(sale => {
+          const date = toDate(sale?.date || sale?.createdAt || sale?.paymentPaidAt || sale?.validatedAt);
+          if (!date) return;
+          const key = toDateKey(date);
+          const amount = parseFloat(sale?.totalAmount ?? sale?.total ?? sale?.amount ?? 0);
+          revenueByDay[key] = (revenueByDay[key] || 0) + (Number.isFinite(amount) ? amount : 0);
+        });
+
+        const createdAt = toDate(company?.createdAt || company?.created || company?.created_at);
+        if (createdAt) {
+          const key = toDateKey(createdAt);
+          companiesByDay[key] = (companiesByDay[key] || 0) + 1;
+        }
+      });
+
+      const labels = days.map(day => day.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', ''));
+      const revenueValues = days.map(day => revenueByDay[toDateKey(day)] || 0);
+      const companyValues = days.map(day => companiesByDay[toDateKey(day)] || 0);
+      const totalRevenue = revenueValues.reduce((sum, val) => sum + val, 0);
+
+      chartDataCache = { labels, revenue: revenueValues, companies: companyValues };
+
+      const maxValue = Math.max(...revenueValues, ...companyValues, 1);
+      if (chartMax) chartMax.textContent = formatNumber(Math.round(maxValue));
+      if (chartMid) chartMid.textContent = formatNumber(Math.round(maxValue / 2));
+      if (chartMin) chartMin.textContent = '0';
+      if (chartTotalRevenue) chartTotalRevenue.textContent = formatCurrency(totalRevenue);
+
+      const xStart = 60;
+      const xEnd = 660;
+      const yTop = 40;
+      const yBottom = 240;
+      const xStep = (xEnd - xStart) / (labels.length - 1 || 1);
+
+      const mapY = (value) => {
+        const ratio = value / maxValue;
+        return yBottom - (yBottom - yTop) * ratio;
+      };
+
+      const revenuePoints = revenueValues.map((value, index) => `${xStart + index * xStep},${mapY(value)}`);
+      const companyPoints = companyValues.map((value, index) => `${xStart + index * xStep},${mapY(value)}`);
+
+      if (chartRevenueLine) chartRevenueLine.setAttribute('points', revenuePoints.join(' '));
+      if (chartCompanyLine) chartCompanyLine.setAttribute('points', companyPoints.join(' '));
+
+      if (chartRevenueDots) {
+        chartRevenueDots.innerHTML = revenueValues.map((value, index) => {
+          const x = xStart + index * xStep;
+          const y = mapY(value);
+          return `<circle cx="${x}" cy="${y}" r="4"></circle>`;
+        }).join('');
+      }
+
+      if (chartCompanyDots) {
+        chartCompanyDots.innerHTML = companyValues.map((value, index) => {
+          const x = xStart + index * xStep;
+          const y = mapY(value);
+          return `<circle cx="${x}" cy="${y}" r="4"></circle>`;
+        }).join('');
+      }
+
+      if (chartXLabels) {
+        chartXLabels.innerHTML = labels.map((label, index) => {
+          const x = xStart + index * xStep;
+          return `<text x="${x - 10}" y="258">${label}</text>`;
+        }).join('');
+      }
+
+      if (!platformChart.dataset.bound) {
+        platformChart.dataset.bound = 'true';
+        platformChart.addEventListener('mousemove', (event) => {
+          const rect = platformChart.getBoundingClientRect();
+          const relativeX = event.clientX - rect.left;
+          const ratio = relativeX / rect.width;
+          const index = Math.min(chartDataCache.labels.length - 1, Math.max(0, Math.round(ratio * (chartDataCache.labels.length - 1))));
+
+          const label = chartDataCache.labels[index] || '—';
+          const revenue = chartDataCache.revenue[index] || 0;
+          const companies = chartDataCache.companies[index] || 0;
+
+          const x = xStart + index * xStep;
+          const y = mapY(revenue);
+
+          if (chartTooltip) {
+            chartTooltip.classList.remove('hidden');
+            chartTooltipDay.textContent = label;
+            chartTooltipRevenue.textContent = `CA : ${formatCurrency(revenue)}`;
+            chartTooltipClients.textContent = `Nouveaux clients : ${formatNumber(companies)}`;
+
+            const scaleX = rect.width / 700;
+            const scaleY = rect.height / 260;
+            chartTooltip.style.left = `${x * scaleX}px`;
+            chartTooltip.style.top = `${Math.max(0, (y * scaleY) - 20)}px`;
+          }
+        });
+
+        platformChart.addEventListener('mouseleave', () => {
+          if (chartTooltip) chartTooltip.classList.add('hidden');
+        });
+      }
+    }
+    function renderAccessRequests() {
+      if (!accessRequestsTbody) return;
+      const entries = Object.entries(state.accessRequests || {}).map(([id, data]) => ({ id, ...data }));
+      entries.sort((a, b) => {
+        const dateA = toDate(a.createdAt) || new Date(0);
+        const dateB = toDate(b.createdAt) || new Date(0);
+        return dateB - dateA;
+      });
+
+      accessRequestsCount.textContent = formatNumber(entries.length);
+      if (!entries.length) {
+        accessRequestsEmpty.classList.remove('hidden');
+        accessRequestsTableWrapper.classList.add('hidden');
+        accessRequestsTbody.innerHTML = '';
+        return;
+      }
+
+      accessRequestsEmpty.classList.add('hidden');
+      accessRequestsTableWrapper.classList.remove('hidden');
+
+      accessRequestsTbody.innerHTML = entries.map(entry => {
+        const status = (entry.status || 'pending').toLowerCase();
+        const disabled = status === 'approved' || status === 'rejected';
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3 text-sm text-slate-700">${entry.lastName || entry.nom || '—'}</td>
+            <td class="px-4 py-3 text-sm text-slate-700">${entry.firstName || entry.prenom || '—'}</td>
+            <td class="px-4 py-3 text-sm text-slate-500">${entry.email || '—'}</td>
+            <td class="px-4 py-3 text-right text-sm">
+              <div class="inline-flex items-center gap-2">
+                <button data-action="approve" data-id="${entry.id}" ${disabled ? 'disabled' : ''}
+                  class="px-3 py-1 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 disabled:opacity-50">Accepter</button>
+                <button data-action="hold" data-id="${entry.id}"
+                  class="px-3 py-1 rounded-lg bg-amber-100 text-amber-700 text-xs font-semibold hover:bg-amber-200">Suspendre</button>
+                <button data-action="reject" data-id="${entry.id}" ${disabled ? 'disabled' : ''}
+                  class="px-3 py-1 rounded-lg bg-rose-100 text-rose-700 text-xs font-semibold hover:bg-rose-200 disabled:opacity-50">Rejeter</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderPlanRequests() {
+      if (!planRequestsTbody) return;
+      const entries = Object.entries(state.planRequests || {}).map(([id, data]) => ({ id, ...data }));
+      entries.sort((a, b) => {
+        const dateA = toDate(a.createdAt) || new Date(0);
+        const dateB = toDate(b.createdAt) || new Date(0);
+        return dateB - dateA;
+      });
+
+      planRequestsCount.textContent = formatNumber(entries.length);
+      if (!entries.length) {
+        planRequestsEmpty.classList.remove('hidden');
+        planRequestsTableWrapper.classList.add('hidden');
+        planRequestsTbody.innerHTML = '';
+        return;
+      }
+
+      planRequestsEmpty.classList.add('hidden');
+      planRequestsTableWrapper.classList.remove('hidden');
+
+      planRequestsTbody.innerHTML = entries.map(entry => {
+        const status = (entry.status || 'pending').toLowerCase();
+        const disabled = status === 'approved' || status === 'rejected';
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3 text-sm text-slate-700">${entry.lastName || entry.nom || '—'}</td>
+            <td class="px-4 py-3 text-sm text-slate-700">${entry.firstName || entry.prenom || '—'}</td>
+            <td class="px-4 py-3 text-sm text-slate-500">${formatNumber(entry.stores || entry.magasinCount || 0)}</td>
+            <td class="px-4 py-3 text-sm text-slate-500">${formatNumber(entry.boutiques || entry.shopCount || 0)}</td>
+            <td class="px-4 py-3 text-right text-sm">
+              <div class="inline-flex items-center gap-2">
+                <button data-action="approve" data-id="${entry.id}" ${disabled ? 'disabled' : ''}
+                  class="px-3 py-1 rounded-lg bg-indigo-500 text-white text-xs font-semibold hover:bg-indigo-600 disabled:opacity-50">Accepter</button>
+                <button data-action="reject" data-id="${entry.id}" ${disabled ? 'disabled' : ''}
+                  class="px-3 py-1 rounded-lg bg-rose-100 text-rose-700 text-xs font-semibold hover:bg-rose-200 disabled:opacity-50">Rejeter</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderCustomerList() {
+      if (!customerList) return;
+      const query = (customerSearch?.value || '').toLowerCase().trim();
+      const entries = Object.entries(state.companies || {}).map(([id, data]) => ({ id, ...data }));
+
+      const filtered = entries.filter(entry => {
+        if (!query) return true;
+        const name = getCompanyName(entry, '').toLowerCase();
+        const email = entry?.email || entry?.contactEmail || '';
+        return name.includes(query) || email.toLowerCase().includes(query);
+      });
+
+      filtered.sort((a, b) => getCompanyName(a).localeCompare(getCompanyName(b)));
+
+      if (!filtered.length) {
+        customerList.innerHTML = '';
+        customerListEmpty.classList.remove('hidden');
+      } else {
+        customerListEmpty.classList.add('hidden');
+        customerList.innerHTML = filtered.map(entry => {
+          const members = entry?.members || {};
+          const adminCount = Object.values(members).filter(member => (member?.role || '').toLowerCase() === 'admin').length;
+          const storeCount = Object.keys(entry?.stores || {}).length;
+          const boutiqueCount = Object.keys(entry?.boutiques || {}).length || (entry?.shopStock ? 1 : 0);
+          const isActive = entry.id === selectedCompanyId;
+          return `
+            <button data-id="${entry.id}" class="w-full text-left rounded-xl border ${isActive ? 'border-cyan-300 bg-cyan-50' : 'border-slate-100'} p-4 hover:border-cyan-200">
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">${getCompanyName(entry, 'Client')}</p>
+                  <p class="text-xs text-slate-400 mt-1">${entry?.contactName || entry?.ownerName || '—'}</p>
+                </div>
+                <span class="text-xs font-semibold text-slate-500">${formatNumber(adminCount)} admin</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-2">${formatNumber(storeCount)} magasins · ${formatNumber(boutiqueCount)} boutiques</p>
+            </button>
+          `;
+        }).join('');
+      }
+
+      if (!selectedCompanyId && filtered.length) {
+        selectedCompanyId = filtered[0].id;
+      }
+      renderCustomerDetail();
+    }
+
+    function renderCustomerDetail() {
+      const company = state.companies?.[selectedCompanyId];
+      if (!company) {
+        customerDetailEmpty.classList.remove('hidden');
+        customerDetailContent.classList.add('hidden');
+        manageAccessButton.disabled = true;
+        return;
+      }
+
+      const members = getMembers(company);
+      const adminCount = members.filter(member => (member?.role || '').toLowerCase() === 'admin').length;
+      const employeeCount = members.filter(member => (member?.role || '').toLowerCase() !== 'admin').length;
+      const storeCount = Object.keys(company?.stores || {}).length;
+      const boutiqueCount = Object.keys(company?.boutiques || {}).length || (company?.shopStock ? 1 : 0);
+      const revenueValue = company?.billing?.currentRevenue || company?.billing?.monthlyRevenue || computeRevenueFromSales(company);
+
+      customerDetailEmpty.classList.add('hidden');
+      customerDetailContent.classList.remove('hidden');
+      manageAccessButton.disabled = false;
+
+      customerName.textContent = getCompanyName(company, 'Client');
+      customerContact.textContent = company?.contactEmail || company?.email || company?.contactPhone || '—';
+      customerAdminsCount.textContent = formatNumber(adminCount);
+      customerEmployeesCount.textContent = formatNumber(employeeCount);
+      customerStoresCount.textContent = formatNumber(storeCount);
+      customerBoutiquesCount.textContent = formatNumber(boutiqueCount);
+      customerRevenue.textContent = formatCurrency(parseFloat(revenueValue) || 0);
+      customerCreated.textContent = (() => {
+        const created = toDate(company?.createdAt || company?.created || company?.created_at);
+        return created ? created.toLocaleDateString('fr-FR', { dateStyle: 'medium' }) : '—';
+      })();
+
+      const accessMap = company?.featureAccess || {};
+      const accessKeys = Object.keys(accessMap);
+      if (!accessKeys.length) {
+        customerAccessList.innerHTML = '<span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">Tous les modules</span>';
+      } else {
+        customerAccessList.innerHTML = PLATFORM_FEATURES.map(feature => {
+          const enabled = accessMap[feature.id] !== false;
+          return `
+            <span class="px-3 py-1 rounded-full text-xs ${enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}">
+              ${feature.label}
+            </span>
+          `;
+        }).join('');
+      }
+
+      if (!members.length) {
+        customerTeamList.innerHTML = '<p class="text-sm text-slate-400">Aucun collaborateur enregistré.</p>';
+      } else {
+        customerTeamList.innerHTML = members.slice(0, 6).map(member => {
+          const role = member?.role || 'collaborateur';
+          return `
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-semibold text-slate-700">${member.fullName || member.name || member.email}</p>
+                <p class="text-xs text-slate-400">${member.email || '—'}</p>
+              </div>
+              <span class="text-xs font-semibold text-slate-500">${role}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function openAccessModal() {
+      const company = state.companies?.[selectedCompanyId];
+      if (!company) return;
+      const accessMap = company?.featureAccess || {};
+      const hasExplicit = Object.keys(accessMap).length > 0;
+
+      accessModalList.innerHTML = PLATFORM_FEATURES.map(feature => {
+        const enabled = hasExplicit ? accessMap[feature.id] !== false : true;
+        return `
+          <label class="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-700">${feature.label}</p>
+              <p class="text-xs text-slate-400">Module ${feature.label.toLowerCase()}</p>
+            </div>
+            <input type="checkbox" data-feature="${feature.id}" class="h-5 w-5 text-cyan-500 rounded" ${enabled ? 'checked' : ''} />
+          </label>
+        `;
+      }).join('');
+
+      accessModal.classList.remove('hidden');
+    }
+
+    function closeAccessModal() {
+      accessModal.classList.add('hidden');
+    }
+
+    async function saveAccessChanges() {
+      const company = state.companies?.[selectedCompanyId];
+      if (!company) return;
+      const selections = {};
+      accessModalList.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        selections[input.dataset.feature] = input.checked;
+      });
+
+      await update(ref(db, `companies/${selectedCompanyId}`), {
+        featureAccess: selections,
+        featureAccessUpdatedAt: new Date().toISOString(),
+        featureAccessUpdatedBy: currentUser?.email || ''
+      });
+      showToast('Accès mis à jour.');
+      closeAccessModal();
+    }
+    async function updateRequestStatus(path, id, status) {
+      if (!id) return;
+      await update(ref(db, `${path}/${id}`), {
+        status,
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: currentUser?.email || ''
+      });
+      showToast('Demande mise à jour.');
+    }
+
+    function subscribeToData() {
+      const companiesRef = ref(db, 'companies');
+      const accessRequestsRef = ref(db, 'platformAccessRequests');
+      const planRequestsRef = ref(db, 'platformPlanChangeRequests');
+      const metricsRef = ref(db, 'platformMetrics');
+      const platformUsersRef = ref(db, 'platformUsers');
+      const presenceRef = ref(db, 'platformPresence');
+
+      onValue(companiesRef, (snapshot) => {
+        state.companies = snapshot.val() || {};
+        renderStats();
+        renderChart();
+        renderCustomerList();
+        updateLastUpdated();
+      });
+
+      onValue(accessRequestsRef, (snapshot) => {
+        state.accessRequests = snapshot.val() || {};
+        renderAccessRequests();
+      });
+
+      onValue(planRequestsRef, (snapshot) => {
+        state.planRequests = snapshot.val() || {};
+        renderPlanRequests();
+      });
+
+      onValue(metricsRef, (snapshot) => {
+        state.platformMetrics = snapshot.val() || {};
+        renderStats();
+      });
+
+      onValue(platformUsersRef, (snapshot) => {
+        state.platformUsers = snapshot.val() || {};
+        renderStats();
+      });
+
+      onValue(presenceRef, (snapshot) => {
+        state.presence = snapshot.val() || {};
+        renderStats();
+      });
+
+      state._refs = { companiesRef, accessRequestsRef, planRequestsRef, metricsRef, platformUsersRef, presenceRef };
+    }
+
+    function cleanupListeners() {
+      if (!state._refs) return;
+      Object.values(state._refs).forEach(reference => {
+        if (reference) off(reference);
+      });
+      state._refs = null;
+    }
+
+    function startPresence() {
+      if (!currentUser) return;
+      const presenceRef = ref(db, `platformPresence/${currentUser.uid}`);
+      set(presenceRef, {
+        uid: currentUser.uid,
+        email: currentUser.email || '',
+        role: 'admin',
+        lastActive: new Date().toISOString()
+      });
+      onDisconnect(presenceRef).remove();
+      if (presenceInterval) clearInterval(presenceInterval);
+      presenceInterval = setInterval(() => {
+        update(presenceRef, { lastActive: new Date().toISOString() });
+      }, 60000);
+    }
+
+    function stopPresence() {
+      if (presenceInterval) {
+        clearInterval(presenceInterval);
+        presenceInterval = null;
+      }
+      if (currentUser) {
+        remove(ref(db, `platformPresence/${currentUser.uid}`));
+      }
+    }
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        loginError.classList.add('hidden');
+        try {
+          await signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value.trim());
+          loginForm.reset();
+        } catch (error) {
+          loginError.textContent = error?.message || 'Impossible de se connecter.';
+          loginError.classList.remove('hidden');
+        }
+      });
+    }
+
+    if (logoutButton) {
+      logoutButton.addEventListener('click', () => signOut(auth));
+    }
+
+    navButtons.forEach(button => {
+      button.addEventListener('click', () => setActivePage(button.dataset.page));
+    });
+
+    if (customerSearch) {
+      customerSearch.addEventListener('input', () => renderCustomerList());
+    }
+
+    if (customerList) {
+      customerList.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-id]');
+        if (!target) return;
+        selectedCompanyId = target.dataset.id;
+        renderCustomerList();
+      });
+    }
+
+    if (manageAccessButton) {
+      manageAccessButton.addEventListener('click', openAccessModal);
+    }
+
+    if (accessModalClose) accessModalClose.addEventListener('click', closeAccessModal);
+    if (accessModalCancel) accessModalCancel.addEventListener('click', closeAccessModal);
+    if (accessModalSave) accessModalSave.addEventListener('click', saveAccessChanges);
+
+    if (accessRequestsTbody) {
+      accessRequestsTbody.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        const id = button.dataset.id;
+        const status = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'pending';
+        updateRequestStatus('platformAccessRequests', id, status);
+      });
+    }
+
+    if (planRequestsTbody) {
+      planRequestsTbody.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        const id = button.dataset.id;
+        const status = action === 'approve' ? 'approved' : 'rejected';
+        updateRequestStatus('platformPlanChangeRequests', id, status);
+      });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        authPage.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        sidebarUserName.textContent = user.displayName || 'Administrateur';
+        sidebarUserEmail.textContent = user.email || '';
+        setActivePage(currentPage);
+        subscribeToData();
+        startPresence();
+      } else {
+        cleanupListeners();
+        stopPresence();
+        currentUser = null;
+        selectedCompanyId = null;
+        authPage.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+      }
+    });
+
+    renderStats();
+    renderChart();
+    renderAccessRequests();
+    renderPlanRequests();
+    renderCustomerList();
+  </script>
+</body>
+</html>
