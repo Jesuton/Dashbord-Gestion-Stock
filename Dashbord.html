@@ -47,10 +47,22 @@
         </div>
         <div>
           <h1 class="text-2xl font-bold text-slate-900">StockPilot Admin</h1>
-          <p class="text-sm text-slate-500">Connexion à la plateforme</p>
+          <p class="text-sm text-slate-500">Connexion ou création de compte</p>
         </div>
       </div>
-      <form id="login-form" class="mt-8 space-y-4">
+
+      <div class="mt-6 flex bg-slate-100 rounded-xl p-1 text-sm font-semibold">
+        <button id="auth-toggle-login" type="button"
+          class="flex-1 rounded-lg px-3 py-2 bg-white text-slate-900 shadow">
+          Se connecter
+        </button>
+        <button id="auth-toggle-signup" type="button"
+          class="flex-1 rounded-lg px-3 py-2 text-slate-500 hover:text-slate-700">
+          S'inscrire
+        </button>
+      </div>
+
+      <form id="login-form" class="mt-6 space-y-4">
         <div>
           <label class="text-sm font-medium text-slate-600" for="login-email">Email</label>
           <input id="login-email" type="email" autocomplete="email" required
@@ -65,6 +77,34 @@
         <button type="submit"
           class="w-full rounded-xl bg-cyan-500 py-3 text-sm font-semibold text-white shadow hover:bg-cyan-600 transition">
           Se connecter
+        </button>
+      </form>
+
+      <form id="signup-form" class="mt-6 space-y-4 hidden">
+        <div>
+          <label class="text-sm font-medium text-slate-600" for="signup-fullname">Nom complet</label>
+          <input id="signup-fullname" type="text" required
+            class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-600" for="signup-company">Nom de l'entreprise</label>
+          <input id="signup-company" type="text" required
+            class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-600" for="signup-email">Email</label>
+          <input id="signup-email" type="email" autocomplete="email" required
+            class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-600" for="signup-password">Mot de passe</label>
+          <input id="signup-password" type="password" autocomplete="new-password" required
+            class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+        </div>
+        <p id="signup-error" class="text-sm text-red-500 hidden"></p>
+        <button type="submit"
+          class="w-full rounded-xl bg-cyan-500 py-3 text-sm font-semibold text-white shadow hover:bg-cyan-600 transition">
+          Créer mon compte
         </button>
       </form>
     </div>
@@ -428,8 +468,8 @@
 
   <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-    import { getDatabase, ref, onValue, off, update, set, remove, onDisconnect } from "firebase/database";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
+    import { getDatabase, ref, onValue, off, update, set, remove, onDisconnect, get } from "firebase/database";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB65Iye8YMpxXsPthdBYmNojBMpaTPZS3A",
@@ -473,10 +513,18 @@
 
     const authPage = document.getElementById('auth-page');
     const appContainer = document.getElementById('app-container');
+    const authToggleLogin = document.getElementById('auth-toggle-login');
+    const authToggleSignup = document.getElementById('auth-toggle-signup');
     const loginForm = document.getElementById('login-form');
     const loginEmail = document.getElementById('login-email');
     const loginPassword = document.getElementById('login-password');
     const loginError = document.getElementById('login-error');
+    const signupForm = document.getElementById('signup-form');
+    const signupFullname = document.getElementById('signup-fullname');
+    const signupCompany = document.getElementById('signup-company');
+    const signupEmail = document.getElementById('signup-email');
+    const signupPassword = document.getElementById('signup-password');
+    const signupError = document.getElementById('signup-error');
     const logoutButton = document.getElementById('logout-button');
     const navButtons = document.querySelectorAll('.nav-button');
     const pageTitle = document.getElementById('page-title');
@@ -572,6 +620,24 @@
       if (pageTitle) pageTitle.textContent = page === 'customers' ? 'Customer' : 'Tableau de bord';
     }
 
+    function setAuthMode(isLogin) {
+      if (isLogin) {
+        loginForm?.classList.remove('hidden');
+        signupForm?.classList.add('hidden');
+        authToggleLogin?.classList.add('bg-white', 'text-slate-900', 'shadow');
+        authToggleLogin?.classList.remove('text-slate-500');
+        authToggleSignup?.classList.remove('bg-white', 'text-slate-900', 'shadow');
+        authToggleSignup?.classList.add('text-slate-500');
+      } else {
+        loginForm?.classList.add('hidden');
+        signupForm?.classList.remove('hidden');
+        authToggleSignup?.classList.add('bg-white', 'text-slate-900', 'shadow');
+        authToggleSignup?.classList.remove('text-slate-500');
+        authToggleLogin?.classList.remove('bg-white', 'text-slate-900', 'shadow');
+        authToggleLogin?.classList.add('text-slate-500');
+      }
+    }
+
     function formatNumber(value) {
       if (value === null || value === undefined || Number.isNaN(value)) return '0';
       return new Intl.NumberFormat('fr-FR').format(value);
@@ -644,7 +710,7 @@
         else revenue += computeRevenueFromSales(company);
       });
 
-      const adminsPlatform = Object.keys(state.platformUsers || {}).length;
+      const adminsPlatform = Object.values(state.platformUsers || {}).filter(user => !user?.status || user.status === 'approved').length;
       const totalAdmins = adminsPlatform > 0 ? adminsPlatform : admins;
 
       return {
@@ -1045,6 +1111,9 @@
         reviewedAt: new Date().toISOString(),
         reviewedBy: currentUser?.email || ''
       });
+      if (path === 'platformAccessRequests') {
+        await update(ref(db, `platformUsers/${id}`), { status });
+      }
       showToast('Demande mise à jour.');
     }
 
@@ -1140,6 +1209,58 @@
       });
     }
 
+    if (signupForm) {
+      signupForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        signupError.classList.add('hidden');
+        try {
+          const fullName = signupFullname.value.trim();
+          const companyName = signupCompany.value.trim();
+          const email = signupEmail.value.trim();
+          const password = signupPassword.value.trim();
+          const credential = await createUserWithEmailAndPassword(auth, email, password);
+          const uid = credential.user.uid;
+          const [firstName, ...lastParts] = fullName.split(' ');
+          const lastName = lastParts.join(' ');
+          const now = new Date().toISOString();
+
+          await set(ref(db, `platformUsers/${uid}`), {
+            uid,
+            fullName,
+            firstName: firstName || '',
+            lastName: lastName || '',
+            email,
+            companyName,
+            role: 'admin',
+            status: 'pending',
+            createdAt: now
+          });
+
+          await set(ref(db, `platformAccessRequests/${uid}`), {
+            id: uid,
+            firstName: firstName || '',
+            lastName: lastName || '',
+            email,
+            companyName,
+            status: 'pending',
+            createdAt: now
+          });
+
+          signupForm.reset();
+          signupError.textContent = "Compte créé. Votre demande est en attente de validation.";
+          signupError.classList.remove('hidden');
+          await signOut(auth);
+          setAuthMode(true);
+        } catch (error) {
+          signupError.textContent = error?.message || "Impossible de créer le compte.";
+          signupError.classList.remove('hidden');
+        }
+      });
+    }
+
+    if (authToggleLogin) authToggleLogin.addEventListener('click', () => setAuthMode(true));
+    if (authToggleSignup) authToggleSignup.addEventListener('click', () => setAuthMode(false));
+
     if (logoutButton) {
       logoutButton.addEventListener('click', () => signOut(auth));
     }
@@ -1191,8 +1312,20 @@
       });
     }
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
+        const userSnap = await get(ref(db, `platformUsers/${user.uid}`));
+        const userData = userSnap.val();
+        if (!userData || (userData.status && userData.status !== 'approved')) {
+          authPage.classList.remove('hidden');
+          appContainer.classList.add('hidden');
+          loginError.textContent = userData?.status === 'rejected'
+            ? "Accès refusé. Contactez l'administrateur."
+            : "Compte en attente de validation.";
+          loginError.classList.remove('hidden');
+          await signOut(auth);
+          return;
+        }
         currentUser = user;
         authPage.classList.add('hidden');
         appContainer.classList.remove('hidden');
@@ -1211,6 +1344,7 @@
       }
     });
 
+    setAuthMode(true);
     renderStats();
     renderChart();
     renderAccessRequests();
