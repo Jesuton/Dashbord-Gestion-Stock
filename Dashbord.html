@@ -491,6 +491,22 @@
           </div>
         </div>
       </div>
+      <div class="mt-4 space-y-4 text-sm text-slate-600">
+        <div class="rounded-xl border border-slate-200 p-4">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Co-admins (optionnel)</p>
+            <span class="text-[11px] text-slate-400">Séparer par virgules ou retours ligne</span>
+          </div>
+          <textarea id="access-request-coadmins" rows="2" placeholder="coadmin@commerce.com, second@commerce.com"
+            class="mt-3 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400"></textarea>
+          <p class="mt-2 text-xs text-slate-400">Les co-admins recevront aussi un mot de passe admin.</p>
+        </div>
+        <div id="access-request-generated" class="hidden rounded-xl border border-emerald-200 bg-emerald-50/40 p-4">
+          <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wide">Accès générés</p>
+          <div id="access-request-generated-list" class="mt-3 space-y-2"></div>
+          <p class="mt-3 text-xs text-emerald-700">Transmettez ces mots de passe aux administrateurs pour se connecter.</p>
+        </div>
+      </div>
       <div class="mt-6 flex flex-col sm:flex-row gap-3">
         <button id="access-request-approve"
           class="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600">
@@ -516,7 +532,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, off, update, set, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getDatabase, ref, onValue, off, update, set, remove, onDisconnect, get, push } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB65Iye8YMpxXsPthdBYmNojBMpaTPZS3A",
@@ -531,6 +547,8 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const secondaryApp = initializeApp(firebaseConfig, 'secondary');
+    const secondaryAuth = getAuth(secondaryApp);
     const db = getDatabase(app);
 
     const FEATURE_SECTIONS = [
@@ -665,6 +683,21 @@
       }
     ];
 
+    const DEFAULT_ADMIN_PERMISSIONS = [
+      'Tableau de bord',
+      'Ventes',
+      'Historique des ventes',
+      'Stock Boutique',
+      'Mon Magasin',
+      'Tableau des prix',
+      'Mouvements Magasin',
+      'Fournisseurs',
+      'Statistiques',
+      'Paramètres',
+      'Supprimer Stock Boutique',
+      'Supprimer Stock Magasin'
+    ];
+
     const state = {
       companies: {},
       accessRequests: {},
@@ -764,6 +797,9 @@
     const accessRequestAddress = document.getElementById('access-request-address');
     const accessRequestDate = document.getElementById('access-request-date');
     const accessRequestStatus = document.getElementById('access-request-status');
+    const accessRequestCoAdmins = document.getElementById('access-request-coadmins');
+    const accessRequestGenerated = document.getElementById('access-request-generated');
+    const accessRequestGeneratedList = document.getElementById('access-request-generated-list');
     const accessRequestApprove = document.getElementById('access-request-approve');
     const accessRequestReject = document.getElementById('access-request-reject');
 
@@ -843,6 +879,46 @@
       const date = toDate(value);
       if (!date) return '—';
       return date.toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function generateAccessCode() {
+      const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 8; i += 1) {
+        code += alphabet[Math.floor(Math.random() * alphabet.length)];
+      }
+      return code;
+    }
+
+    function normalizeEmail(value) {
+      return (value || '').toString().trim().toLowerCase();
+    }
+
+    function parseEmailList(value) {
+      if (!value) return [];
+      const raw = value
+        .toString()
+        .split(/[\s,;]+/)
+        .map(entry => normalizeEmail(entry))
+        .filter(entry => entry && entry.includes('@'));
+      return Array.from(new Set(raw));
+    }
+
+    function getNameFromEmail(email, fallback = 'Administrateur') {
+      if (!email) return fallback;
+      const base = email.split('@')[0] || '';
+      const cleaned = base.replace(/[._-]+/g, ' ').trim();
+      if (!cleaned) return fallback;
+      return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    }
+
+    async function createAdminAuthUser(email, password) {
+      try {
+        const credential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+        return credential.user;
+      } finally {
+        await signOut(secondaryAuth);
+      }
     }
 
     function toDateKey(date) {
@@ -1098,6 +1174,33 @@
       }).join('');
     }
 
+    function renderGeneratedAccess(request) {
+      if (!accessRequestGenerated || !accessRequestGeneratedList) return;
+      const list = Array.isArray(request?.generatedAccess) ? request.generatedAccess : [];
+      if (!list.length) {
+        accessRequestGenerated.classList.add('hidden');
+        accessRequestGeneratedList.innerHTML = '';
+        return;
+      }
+      accessRequestGenerated.classList.remove('hidden');
+      accessRequestGeneratedList.innerHTML = list.map(entry => {
+        const label = entry.loginType === 'admin' ? 'Mot de passe admin' : 'Code collaborateur';
+        return `
+        <div class="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-white px-3 py-2">
+          <div>
+            <p class="text-sm font-semibold text-emerald-700">${entry.email || '—'}</p>
+            <p class="text-[11px] text-emerald-600">Rôle : ${entry.role || 'admin'} · ${label}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-sm text-emerald-700">${entry.accessCode || '—'}</span>
+            <button type="button" data-copy-code="${entry.accessCode || ''}"
+              class="px-2 py-1 text-xs font-semibold rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Copier</button>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
     function openAccessRequestModal(id) {
       if (!accessRequestModal) return;
       const request = state.accessRequests?.[id];
@@ -1105,6 +1208,7 @@
       accessRequestModal.dataset.requestId = id;
       const status = (request.status || 'pending').toLowerCase();
       const statusLabel = status === 'approved' ? 'Approuvée' : status === 'rejected' ? 'Rejetée' : 'En attente';
+      const isPending = status === 'pending';
 
       if (accessRequestBusiness) accessRequestBusiness.textContent = request.businessName || '—';
       if (accessRequestEmail) accessRequestEmail.textContent = request.email || '—';
@@ -1114,8 +1218,13 @@
       if (accessRequestAddress) accessRequestAddress.textContent = request.address || '—';
       if (accessRequestDate) accessRequestDate.textContent = formatDateTime(request.createdAt);
       if (accessRequestStatus) accessRequestStatus.textContent = statusLabel;
+      if (accessRequestCoAdmins) {
+        const coAdminEmails = Array.isArray(request.coAdminEmails) ? request.coAdminEmails : [];
+        accessRequestCoAdmins.value = coAdminEmails.join(', ');
+        accessRequestCoAdmins.disabled = !isPending;
+      }
+      renderGeneratedAccess(request);
 
-      const isPending = status === 'pending';
       if (accessRequestApprove) {
         accessRequestApprove.disabled = !isPending;
         accessRequestApprove.classList.toggle('opacity-50', !isPending);
@@ -1134,14 +1243,178 @@
       delete accessRequestModal.dataset.requestId;
     }
 
-    async function updateAccessRequestStatus(id, status) {
+    async function approveAccessRequest(id) {
+      if (!id) return;
+      const request = state.accessRequests?.[id];
+      if (!request) return;
+      const status = (request.status || 'pending').toLowerCase();
+      if (status === 'approved') {
+        showToast('Demande déjà approuvée.');
+        return;
+      }
+      if (status === 'rejected') {
+        showToast('Demande déjà rejetée.');
+        return;
+      }
+
+      const primaryEmail = normalizeEmail(request.email);
+      if (!primaryEmail) {
+        showToast("Email du demandeur manquant.");
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const coAdminsRaw = accessRequestCoAdmins ? accessRequestCoAdmins.value : '';
+      const coAdminEmails = parseEmailList(coAdminsRaw).filter(email => email !== primaryEmail);
+
+      if (accessRequestApprove) accessRequestApprove.disabled = true;
+      try {
+        let companyId = request.companyId;
+        if (!companyId || !state.companies?.[companyId]) {
+          const companyRef = push(ref(db, 'companies'));
+          companyId = companyRef.key;
+        }
+        if (!companyId) {
+          showToast("Impossible de créer l'entreprise.");
+          return;
+        }
+
+        const companyName = request.businessName || 'Nouveau client';
+        const adminUsers = [
+          {
+            email: primaryEmail,
+            fullName: request.roleInCompany || getNameFromEmail(primaryEmail),
+            role: 'admin'
+          },
+          ...coAdminEmails.map(email => ({
+            email,
+            fullName: getNameFromEmail(email, 'Co-admin'),
+            role: 'admin'
+          }))
+        ];
+
+        const createdAdmins = [];
+        for (const admin of adminUsers) {
+          const password = generateAccessCode();
+          try {
+            const user = await createAdminAuthUser(admin.email, password);
+            createdAdmins.push({
+              uid: user.uid,
+              email: admin.email,
+              fullName: admin.fullName,
+              role: admin.role,
+              password
+            });
+          } catch (error) {
+            const code = error?.code || '';
+            if (code === 'auth/email-already-in-use') {
+              showToast(`Email déjà utilisé: ${admin.email}`, 'error');
+            } else if (code === 'auth/invalid-email') {
+              showToast(`Email invalide: ${admin.email}`, 'error');
+            } else {
+              showToast("Impossible de créer le compte admin.", 'error');
+            }
+            return;
+          }
+        }
+
+        const updates = {};
+        updates[`companies/${companyId}`] = {
+          id: companyId,
+          name: companyName,
+          companyName: companyName,
+          contactEmail: primaryEmail,
+          contactPhone: request.whatsappPhone || '',
+          address: request.address || '',
+          employeesCount: request.employeesCount || 0,
+          status: 'active',
+          createdAt: now,
+          createdBy: currentUser?.email || '',
+          ownerEmail: primaryEmail,
+          ownerRole: request.roleInCompany || '',
+          source: 'access_request'
+        };
+
+        const generatedAccess = [];
+        createdAdmins.forEach(admin => {
+          updates[`companies/${companyId}/members/${admin.uid}`] = {
+            id: admin.uid,
+            fullName: admin.fullName,
+            email: admin.email,
+            role: admin.role,
+            status: 'actif',
+            permissions: [...DEFAULT_ADMIN_PERMISSIONS],
+            storeAccess: [],
+            boutiqueAccess: [],
+            accessCode: admin.password,
+            createdAt: now,
+            invitedBy: currentUser?.email || 'platform'
+          };
+          updates[`users/${admin.uid}`] = {
+            uid: admin.uid,
+            fullName: admin.fullName,
+            email: admin.email,
+            role: admin.role,
+            status: 'approved',
+            permissions: [...DEFAULT_ADMIN_PERMISSIONS],
+            storeAccess: [],
+            boutiqueAccess: [],
+            companyId,
+            companyName,
+            accessCode: admin.password,
+            createdAt: now
+          };
+          generatedAccess.push({
+            email: admin.email,
+            role: admin.role,
+            accessCode: admin.password,
+            memberId: admin.uid,
+            loginType: 'admin'
+          });
+        });
+
+        updates[`access_requests/${id}`] = {
+          status: 'approved',
+          reviewedAt: now,
+          approvedAt: now,
+          reviewedBy: currentUser?.email || '',
+          companyId,
+          coAdminEmails,
+          generatedAccess
+        };
+
+        await update(ref(db), updates);
+        state.accessRequests = state.accessRequests || {};
+        state.accessRequests[id] = {
+          ...request,
+          status: 'approved',
+          reviewedAt: now,
+          approvedAt: now,
+          reviewedBy: currentUser?.email || '',
+          companyId,
+          coAdminEmails,
+          generatedAccess
+        };
+        renderAccessRequests();
+        openAccessRequestModal(id);
+        showToast('Accès créés et demande approuvée.');
+      } catch (error) {
+        console.error(error);
+        showToast("Impossible d'approuver la demande.");
+      } finally {
+        if (accessRequestApprove) accessRequestApprove.disabled = false;
+      }
+    }
+
+    async function rejectAccessRequest(id) {
       if (!id) return;
       await update(ref(db, `access_requests/${id}`), {
-        status,
+        status: 'rejected',
         reviewedAt: new Date().toISOString(),
-        reviewedBy: currentUser?.email || ''
+        reviewedBy: currentUser?.email || '',
+        rejectedAt: new Date().toISOString()
       });
-      showToast('Demande mise à jour.');
+      showToast('Demande rejetée.');
       closeAccessRequestModal();
     }
 
@@ -1545,16 +1818,35 @@
         if (event.target === accessRequestModal) closeAccessRequestModal();
       });
     }
+    if (accessRequestGeneratedList) {
+      accessRequestGeneratedList.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-copy-code]');
+        if (!button) return;
+        const code = button.dataset.copyCode || '';
+        if (!code) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(code).then(() => showToast('Code copié.'));
+        } else {
+          const tempInput = document.createElement('input');
+          tempInput.value = code;
+          document.body.appendChild(tempInput);
+          tempInput.select();
+          document.execCommand('copy');
+          document.body.removeChild(tempInput);
+          showToast('Code copié.');
+        }
+      });
+    }
     if (accessRequestApprove) {
       accessRequestApprove.addEventListener('click', () => {
         const id = accessRequestModal?.dataset?.requestId;
-        if (id) updateAccessRequestStatus(id, 'approved');
+        if (id) approveAccessRequest(id);
       });
     }
     if (accessRequestReject) {
       accessRequestReject.addEventListener('click', () => {
         const id = accessRequestModal?.dataset?.requestId;
-        if (id) updateAccessRequestStatus(id, 'rejected');
+        if (id) rejectAccessRequest(id);
       });
     }
 
