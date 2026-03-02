@@ -1184,17 +1184,26 @@
       }
       accessRequestGenerated.classList.remove('hidden');
       accessRequestGeneratedList.innerHTML = list.map(entry => {
-        const label = entry.loginType === 'admin' ? 'Mot de passe admin' : 'Code collaborateur';
+        const loginType = entry.loginType || '';
+        const isAdmin = loginType.startsWith('admin');
+        const label = isAdmin ? 'Mot de passe admin' : 'Code collaborateur';
+        const note = entry.note ? `<p class="text-[11px] text-emerald-600">${entry.note}</p>` : '';
+        const hasCode = Boolean(entry.accessCode) && entry.accessCode !== '—';
+        const codeDisplay = hasCode ? entry.accessCode : '—';
+        const copyButton = hasCode
+          ? `<button type="button" data-copy-code="${entry.accessCode}"
+              class="px-2 py-1 text-xs font-semibold rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Copier</button>`
+          : '';
         return `
         <div class="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-white px-3 py-2">
           <div>
             <p class="text-sm font-semibold text-emerald-700">${entry.email || '—'}</p>
             <p class="text-[11px] text-emerald-600">Rôle : ${entry.role || 'admin'} · ${label}</p>
+            ${note}
           </div>
           <div class="flex items-center gap-2">
-            <span class="font-mono text-sm text-emerald-700">${entry.accessCode || '—'}</span>
-            <button type="button" data-copy-code="${entry.accessCode || ''}"
-              class="px-2 py-1 text-xs font-semibold rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Copier</button>
+            <span class="font-mono text-sm text-emerald-700">${codeDisplay}</span>
+            ${copyButton}
           </div>
         </div>
       `;
@@ -1294,7 +1303,11 @@
         ];
 
         const createdAdmins = [];
-        for (const admin of adminUsers) {
+        const existingAdmins = [];
+        const failedAdmins = [];
+        for (let index = 0; index < adminUsers.length; index += 1) {
+          const admin = adminUsers[index];
+          const isPrimary = index === 0;
           const password = generateAccessCode();
           try {
             const user = await createAdminAuthUser(admin.email, password);
@@ -1303,19 +1316,49 @@
               email: admin.email,
               fullName: admin.fullName,
               role: admin.role,
-              password
+              password,
+              authStatus: 'created'
             });
           } catch (error) {
             const code = error?.code || '';
             if (code === 'auth/email-already-in-use') {
-              showToast(`Email déjà utilisé: ${admin.email}`, 'error');
+              existingAdmins.push({
+                email: admin.email,
+                fullName: admin.fullName,
+                role: admin.role,
+                authStatus: 'existing'
+              });
+              continue;
             } else if (code === 'auth/invalid-email') {
               showToast(`Email invalide: ${admin.email}`, 'error');
-            } else {
-              showToast("Impossible de créer le compte admin.", 'error');
+              return;
+            } else if (code === 'auth/unauthorized-domain' || code === 'auth/app-not-authorized') {
+              showToast("Domaine non autorisé. Ajoutez ce domaine dans Firebase Auth > Domaines autorisés.", 'error');
+              return;
+            } else if (code === 'auth/operation-not-allowed') {
+              showToast("Activez le fournisseur Email/Mot de passe dans Firebase Auth.", 'error');
+              return;
             }
-            return;
+
+            const errorLabel = code || error?.message || 'Erreur inconnue';
+            console.error('Admin creation failed:', admin.email, error);
+            if (isPrimary) {
+              showToast(`Impossible de créer l'admin principal: ${errorLabel}`, 'error');
+              return;
+            }
+            failedAdmins.push({
+              email: admin.email,
+              fullName: admin.fullName,
+              role: admin.role,
+              error: errorLabel
+            });
+            continue;
           }
+        }
+
+        if (!createdAdmins.length && !existingAdmins.length) {
+          showToast("Aucun compte admin n'a pu être créé.", 'error');
+          return;
         }
 
         const companyData = {
@@ -1383,6 +1426,45 @@
           });
         }
 
+        for (const admin of existingAdmins) {
+          const memberRef = push(ref(db, `companies/${companyId}/members`));
+          const memberId = memberRef.key;
+          if (!memberId) continue;
+          await set(ref(db, `companies/${companyId}/members/${memberId}`), {
+            id: memberId,
+            fullName: admin.fullName,
+            email: admin.email,
+            role: admin.role,
+            status: 'actif',
+            permissions: [...DEFAULT_ADMIN_PERMISSIONS],
+            storeAccess: [],
+            boutiqueAccess: [],
+            accessCode: '',
+            createdAt: now,
+            invitedBy: currentUser?.email || 'platform',
+            authStatus: 'existing'
+          });
+          generatedAccess.push({
+            email: admin.email,
+            role: admin.role,
+            accessCode: '—',
+            memberId,
+            loginType: 'admin-existing',
+            note: 'Compte existant (utiliser mot de passe actuel)'
+          });
+        }
+
+        for (const admin of failedAdmins) {
+          generatedAccess.push({
+            email: admin.email,
+            role: admin.role,
+            accessCode: '',
+            memberId: '',
+            loginType: 'admin-failed',
+            note: `Erreur création: ${admin.error}`
+          });
+        }
+
         await update(ref(db, `access_requests/${id}`), {
           status: 'approved',
           reviewedAt: now,
@@ -1405,7 +1487,9 @@
         };
         renderAccessRequests();
         openAccessRequestModal(id);
-        if (userWriteErrors.length) {
+        if (failedAdmins.length) {
+          showToast("Demande approuvée, mais certains co-admins n'ont pas été créés.", 'warn');
+        } else if (userWriteErrors.length) {
           showToast("Demande approuvée. Certains profils n'ont pas pu être écrits.", 'warn');
         } else {
           showToast('Accès créés et demande approuvée.');
