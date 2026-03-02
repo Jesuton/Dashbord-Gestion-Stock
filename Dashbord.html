@@ -1318,8 +1318,7 @@
           }
         }
 
-        const updates = {};
-        updates[`companies/${companyId}`] = {
+        const companyData = {
           id: companyId,
           name: companyName,
           companyName: companyName,
@@ -1335,9 +1334,12 @@
           source: 'access_request'
         };
 
+        await update(ref(db, `companies/${companyId}`), companyData);
+
         const generatedAccess = [];
-        createdAdmins.forEach(admin => {
-          updates[`companies/${companyId}/members/${admin.uid}`] = {
+        const userWriteErrors = [];
+        for (const admin of createdAdmins) {
+          const memberPayload = {
             id: admin.uid,
             fullName: admin.fullName,
             email: admin.email,
@@ -1350,7 +1352,9 @@
             createdAt: now,
             invitedBy: currentUser?.email || 'platform'
           };
-          updates[`users/${admin.uid}`] = {
+          await set(ref(db, `companies/${companyId}/members/${admin.uid}`), memberPayload);
+
+          const userPayload = {
             uid: admin.uid,
             fullName: admin.fullName,
             email: admin.email,
@@ -1364,6 +1368,12 @@
             accessCode: admin.password,
             createdAt: now
           };
+          try {
+            await set(ref(db, `users/${admin.uid}`), userPayload);
+          } catch (error) {
+            userWriteErrors.push({ email: admin.email, error });
+          }
+
           generatedAccess.push({
             email: admin.email,
             role: admin.role,
@@ -1371,9 +1381,9 @@
             memberId: admin.uid,
             loginType: 'admin'
           });
-        });
+        }
 
-        updates[`access_requests/${id}`] = {
+        await update(ref(db, `access_requests/${id}`), {
           status: 'approved',
           reviewedAt: now,
           approvedAt: now,
@@ -1381,9 +1391,7 @@
           companyId,
           coAdminEmails,
           generatedAccess
-        };
-
-        await update(ref(db), updates);
+        });
         state.accessRequests = state.accessRequests || {};
         state.accessRequests[id] = {
           ...request,
@@ -1397,10 +1405,14 @@
         };
         renderAccessRequests();
         openAccessRequestModal(id);
-        showToast('Accès créés et demande approuvée.');
+        if (userWriteErrors.length) {
+          showToast("Demande approuvée. Certains profils n'ont pas pu être écrits.", 'warn');
+        } else {
+          showToast('Accès créés et demande approuvée.');
+        }
       } catch (error) {
         console.error(error);
-        showToast("Impossible d'approuver la demande.");
+        showToast(error?.message || "Impossible d'approuver la demande.", 'error');
       } finally {
         if (accessRequestApprove) accessRequestApprove.disabled = false;
       }
