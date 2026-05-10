@@ -1177,6 +1177,52 @@
     ];
 
     const ALL_FEATURE_IDS = FEATURE_SECTIONS.flatMap(section => section.items.map(item => item.id));
+    const FEATURE_ACCESS_KEY_TOKEN = '__dot__';
+
+    function encodeFeatureAccessKey(value = '') {
+      return value.toString().replaceAll('.', FEATURE_ACCESS_KEY_TOKEN);
+    }
+
+    function decodeFeatureAccessKey(value = '') {
+      return value.toString().replaceAll(FEATURE_ACCESS_KEY_TOKEN, '.');
+    }
+
+    function encodeFeatureAccessMap(accessMap = {}) {
+      const encoded = {};
+      Object.entries(accessMap || {}).forEach(([key, value]) => {
+        encoded[encodeFeatureAccessKey(key)] = value !== false;
+      });
+      return encoded;
+    }
+
+    function decodeFeatureAccessMap(accessMap = {}) {
+      const decoded = {};
+      Object.entries(accessMap || {}).forEach(([key, value]) => {
+        decoded[decodeFeatureAccessKey(key)] = value !== false;
+      });
+      return decoded;
+    }
+
+    function decodeCompaniesFeatureAccess(companies = {}) {
+      return Object.fromEntries(
+        Object.entries(companies || {}).map(([companyId, company]) => ([
+          companyId,
+          company
+            ? {
+                ...company,
+                featureAccess: decodeFeatureAccessMap(company.featureAccess || {})
+              }
+            : company
+        ]))
+      );
+    }
+
+    function encodeCompanyForWrite(company = {}) {
+      return {
+        ...company,
+        featureAccess: encodeFeatureAccessMap(company.featureAccess || {})
+      };
+    }
 
     const DEFAULT_ADMIN_PERMISSIONS = [
       'Tableau de bord',
@@ -2047,7 +2093,7 @@
             source: sourceCompany
           }
         },
-        [`companies/${targetId}`]: mergedCompany,
+        [`companies/${targetId}`]: encodeCompanyForWrite(mergedCompany),
         [`companies/${sourceId}`]: null
       };
 
@@ -2108,17 +2154,22 @@
     async function saveCompanyFeatureAccess(nextSelections, successMessage = 'Accès mis à jour.') {
       const company = state.companies?.[selectedCompanyId];
       if (!company) return;
-      await update(ref(db, `companies/${selectedCompanyId}`), {
-        featureAccess: nextSelections,
-        featureAccessUpdatedAt: new Date().toISOString(),
-        featureAccessUpdatedBy: currentUser?.email || ''
-      });
-      accessSelections = { ...nextSelections };
-      if (state.companies?.[selectedCompanyId]) {
-        state.companies[selectedCompanyId].featureAccess = { ...nextSelections };
+      try {
+        await update(ref(db, `companies/${selectedCompanyId}`), {
+          featureAccess: encodeFeatureAccessMap(nextSelections),
+          featureAccessUpdatedAt: new Date().toISOString(),
+          featureAccessUpdatedBy: currentUser?.email || ''
+        });
+        accessSelections = { ...nextSelections };
+        if (state.companies?.[selectedCompanyId]) {
+          state.companies[selectedCompanyId].featureAccess = { ...nextSelections };
+        }
+        renderCustomerDetail();
+        showToast(successMessage);
+      } catch (error) {
+        console.error('Impossible de sauvegarder les accès entreprise:', error);
+        showToast("Impossible d'enregistrer les accès.", 'error');
       }
-      renderCustomerDetail();
-      showToast(successMessage);
     }
 
     function focusCompanyIdentityEditor() {
@@ -3406,7 +3457,7 @@
       const presenceRef = ref(db, 'platformPresence');
 
       onValue(companiesRef, (snapshot) => {
-        state.companies = snapshot.val() || {};
+        state.companies = decodeCompaniesFeatureAccess(snapshot.val() || {});
         renderStats();
         renderChart();
         renderCustomerList();
