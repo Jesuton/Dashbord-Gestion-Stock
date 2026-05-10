@@ -8,8 +8,24 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 
+    :root {
+      --admin-bg: #f4f7fb;
+      --admin-surface: rgba(255, 255, 255, 0.86);
+      --admin-border: rgba(148, 163, 184, 0.16);
+      --admin-shadow: 0 18px 45px -28px rgba(15, 23, 42, 0.35);
+      --admin-shadow-soft: 0 10px 28px -24px rgba(15, 23, 42, 0.32);
+      --admin-hero-start: #0f172a;
+      --admin-hero-end: #164e63;
+      --admin-accent: #06b6d4;
+      --admin-accent-soft: rgba(6, 182, 212, 0.14);
+    }
+
     body {
       font-family: 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 24%),
+        linear-gradient(180deg, #f8fbff 0%, var(--admin-bg) 44%, #eef3f9 100%);
     }
 
     .page {
@@ -32,9 +48,54 @@
       opacity: 1;
       pointer-events: auto;
     }
+
+    .glass-panel {
+      background: var(--admin-surface);
+      border: 1px solid var(--admin-border);
+      box-shadow: var(--admin-shadow-soft);
+      backdrop-filter: blur(18px);
+    }
+
+    .enterprise-list-card {
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .enterprise-list-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(6, 182, 212, 0.34);
+      box-shadow: 0 18px 34px -28px rgba(6, 182, 212, 0.55);
+    }
+
+    .enterprise-list-card.active {
+      border-color: rgba(6, 182, 212, 0.55);
+      background:
+        linear-gradient(135deg, rgba(236, 254, 255, 0.96), rgba(248, 250, 252, 0.96)),
+        #fff;
+      box-shadow: 0 24px 44px -32px rgba(8, 145, 178, 0.45);
+    }
+
+    .enterprise-hero {
+      background:
+        radial-gradient(circle at top right, rgba(125, 211, 252, 0.22), transparent 32%),
+        linear-gradient(135deg, var(--admin-hero-start), var(--admin-hero-end));
+      box-shadow: var(--admin-shadow);
+    }
+
+    .metric-tile {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 16px 34px -30px rgba(15, 23, 42, 0.45);
+    }
+
+    .soft-grid {
+      background-image:
+        linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="text-slate-800">
   <div id="auth-page" class="min-h-screen flex items-center justify-center p-6">
     <div class="w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
       <div class="flex items-center gap-3">
@@ -132,7 +193,7 @@
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 014-4h1M15 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
-            Customer
+            Entreprises
           </button>
         </nav>
         <div class="px-4 pb-6">
@@ -355,100 +416,206 @@
         </section>
 
         <section id="page-customers" class="page p-6 lg:p-8 space-y-6">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 class="text-3xl font-bold text-slate-900">Customer</h1>
-              <p class="text-slate-500 mt-1">Gestion globale des clients StockPilot.</p>
-            </div>
-            <div class="w-full lg:w-80">
-              <input id="customer-search" type="text" placeholder="Rechercher un client..."
-                class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+          <div class="glass-panel rounded-[28px] p-6 lg:p-8">
+            <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-5">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-700/80">Contrôle multi-entreprises</p>
+                <h1 class="mt-3 text-3xl lg:text-4xl font-bold text-slate-950">Entreprises</h1>
+                <p class="mt-2 max-w-2xl text-sm lg:text-base text-slate-600">
+                  Pilotez les modules, l’identité et les droits d’administration de chaque entreprise depuis un seul panneau.
+                </p>
+              </div>
+              <div class="w-full xl:w-[22rem]">
+                <label class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Recherche</label>
+                <input id="customer-search" type="text" placeholder="Rechercher une entreprise..."
+                  class="mt-2 w-full rounded-2xl border border-white/70 bg-white/90 px-4 py-3 text-sm shadow-sm focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+              </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
-              <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Clients</h2>
-              <div id="customer-list" class="mt-4 space-y-3"></div>
-              <div id="customer-list-empty" class="mt-4 text-sm text-slate-400">Aucun client trouvé.</div>
+          <div class="grid grid-cols-1 2xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
+            <div class="glass-panel rounded-[28px] p-5">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.26em] text-slate-400">Portefeuille</p>
+                  <h2 class="mt-1 text-xl font-bold text-slate-950">Entreprises suivies</h2>
+                </div>
+                <span id="customer-count-badge" class="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">0</span>
+              </div>
+              <p class="mt-2 text-sm text-slate-500">Sélectionnez une entreprise pour éditer ses paramètres, ses modules et ses administrateurs.</p>
+              <div id="customer-list" class="mt-5 space-y-3 max-h-[calc(100vh-19rem)] overflow-y-auto pr-1"></div>
+              <div id="customer-list-empty" class="mt-4 text-sm text-slate-400">Aucune entreprise trouvée.</div>
             </div>
 
-            <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-              <div id="customer-detail-empty" class="flex items-center justify-center text-slate-400 h-60">
-                Sélectionnez un client pour afficher ses informations.
+            <div class="space-y-6">
+              <div id="customer-detail-empty" class="glass-panel rounded-[28px] p-10 text-center text-slate-400 soft-grid">
+                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg">
+                  <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9-4 9 4-9 4-9-4zm0 0v10l9 4 9-4V7" />
+                  </svg>
+                </div>
+                <h3 class="mt-5 text-2xl font-bold text-slate-900">Sélectionnez une entreprise</h3>
+                <p class="mt-2 max-w-xl mx-auto text-sm text-slate-500">
+                  Vous pourrez ensuite modifier son identité, ajuster ses accès fonctionnels et mettre à jour les membres de son équipe.
+                </p>
               </div>
+
               <div id="customer-detail-content" class="hidden space-y-6">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
-                    <h2 id="customer-name" class="text-2xl font-bold text-slate-900">—</h2>
-                    <p id="customer-contact" class="text-sm text-slate-500">—</p>
+                <div class="enterprise-hero rounded-[30px] p-6 lg:p-7 text-white">
+                  <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-5">
+                    <div class="flex items-start gap-4 min-w-0">
+                      <div id="customer-hero-initials" class="shrink-0 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 text-xl font-bold uppercase ring-1 ring-white/20">—</div>
+                      <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                          <span class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/80">Entreprise</span>
+                          <span id="customer-id-badge" class="inline-flex items-center rounded-full border border-white/15 bg-black/10 px-3 py-1 text-[11px] font-semibold text-white/80">—</span>
+                        </div>
+                        <h2 id="customer-name" class="mt-4 truncate text-3xl font-bold text-white">—</h2>
+                        <p id="customer-contact" class="mt-2 text-sm text-cyan-50/90">—</p>
+                        <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                          <span id="customer-primary-admin" class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 font-semibold text-white/85">Admin principal: —</span>
+                          <span id="customer-created-chip" class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 font-semibold text-white/85">Créé: —</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 xl:justify-end">
+                      <button id="edit-company-button" type="button"
+                        class="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/15">
+                        Modifier l'identité
+                      </button>
+                      <button id="company-essential-button" type="button"
+                        class="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/15">
+                        Accès essentiels
+                      </button>
+                      <button id="company-full-access-button" type="button"
+                        class="inline-flex items-center gap-2 rounded-xl border border-cyan-300/30 bg-cyan-400/20 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-400/30">
+                        Ouvrir tous les modules
+                      </button>
+                      <button id="manage-access-button" disabled
+                        class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm hover:bg-cyan-50 disabled:opacity-50">
+                        Gérer les accès
+                      </button>
+                    </div>
                   </div>
-                  <button id="manage-access-button" disabled
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-white text-sm font-semibold hover:bg-cyan-600 disabled:opacity-50">
-                    Gérer les accès
-                  </button>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                    <p class="text-xs uppercase text-slate-400">Admins</p>
-                    <p id="customer-admins-count" class="text-2xl font-semibold text-slate-900">0</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+                  <div class="metric-tile rounded-3xl p-5">
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Admins</p>
+                    <p id="customer-admins-count" class="mt-3 text-3xl font-bold text-slate-950">0</p>
                   </div>
-                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                    <p class="text-xs uppercase text-slate-400">Employés</p>
-                    <p id="customer-employees-count" class="text-2xl font-semibold text-slate-900">0</p>
+                  <div class="metric-tile rounded-3xl p-5">
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Employés</p>
+                    <p id="customer-employees-count" class="mt-3 text-3xl font-bold text-slate-950">0</p>
                   </div>
-                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                    <p class="text-xs uppercase text-slate-400">Magasins</p>
-                    <p id="customer-stores-count" class="text-2xl font-semibold text-slate-900">0</p>
+                  <div class="metric-tile rounded-3xl p-5">
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Magasins</p>
+                    <p id="customer-stores-count" class="mt-3 text-3xl font-bold text-slate-950">0</p>
                   </div>
-                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                    <p class="text-xs uppercase text-slate-400">Boutiques</p>
-                    <p id="customer-boutiques-count" class="text-2xl font-semibold text-slate-900">0</p>
+                  <div class="metric-tile rounded-3xl p-5">
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Boutiques</p>
+                    <p id="customer-boutiques-count" class="mt-3 text-3xl font-bold text-slate-950">0</p>
                   </div>
-                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                    <p class="text-xs uppercase text-slate-400">CA courant</p>
-                    <p id="customer-revenue" class="text-2xl font-semibold text-slate-900">0</p>
+                  <div class="metric-tile rounded-3xl p-5">
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">CA courant</p>
+                    <p id="customer-revenue" class="mt-3 text-3xl font-bold text-slate-950">0</p>
                   </div>
-                  <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                    <p class="text-xs uppercase text-slate-400">Créé le</p>
-                    <p id="customer-created" class="text-sm font-semibold text-slate-900">—</p>
+                  <div class="metric-tile rounded-3xl p-5">
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Créée le</p>
+                    <p id="customer-created" class="mt-3 text-lg font-semibold text-slate-900">—</p>
                   </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-100 p-4">
-                  <h3 class="text-sm font-semibold text-slate-700">Modules activés</h3>
-                  <div id="customer-access-list" class="mt-3 space-y-4 text-xs"></div>
+                <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] gap-6">
+                  <div class="glass-panel rounded-[28px] p-6 space-y-5">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Identité</p>
+                        <h3 class="mt-1 text-xl font-bold text-slate-950">Profil entreprise</h3>
+                      </div>
+                      <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-500">
+                        Réplique aussi le nom côté utilisateurs
+                      </span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div class="md:col-span-2">
+                        <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="company-name-input">Nom commercial</label>
+                        <input id="company-name-input" type="text"
+                          class="mt-2 w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+                      </div>
+                      <div>
+                        <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="company-display-name-input">Nom d'affichage</label>
+                        <input id="company-display-name-input" type="text"
+                          class="mt-2 w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+                      </div>
+                      <div>
+                        <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="company-contact-email-input">Email de contact</label>
+                        <input id="company-contact-email-input" type="email"
+                          class="mt-2 w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+                      </div>
+                      <div>
+                        <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="company-contact-phone-input">Téléphone / WhatsApp</label>
+                        <input id="company-contact-phone-input" type="text"
+                          class="mt-2 w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+                      </div>
+                      <div>
+                        <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="company-address-input">Adresse</label>
+                        <input id="company-address-input" type="text"
+                          class="mt-2 w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+                      </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <p id="company-profile-meta" class="text-xs text-slate-400">Mettez à jour l'identité visible dans le SaaS et le back-office.</p>
+                      <button id="company-profile-save-button" type="button"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                        Enregistrer l'identité
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="glass-panel rounded-[28px] p-6">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Modules</p>
+                        <h3 class="mt-1 text-xl font-bold text-slate-950">Contrôle d'accès</h3>
+                      </div>
+                      <span id="customer-access-summary" class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">0 activé</span>
+                    </div>
+                    <p class="mt-3 text-sm text-slate-500">
+                      Gérez les permissions entreprise par entreprise. Vous pouvez ouvrir tous les modules, revenir à un mode essentiel ou éditer chaque capacité finement.
+                    </p>
+                    <div id="customer-access-list" class="mt-5 space-y-4 text-xs"></div>
+                  </div>
                 </div>
 
-                <div id="employee-access-card" class="rounded-2xl border border-slate-100 p-4 space-y-4">
+                <div id="employee-access-card" class="glass-panel rounded-[28px] p-6 space-y-4">
                   <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-semibold text-slate-700">Politique d'accès</h3>
+                    <h3 class="text-lg font-semibold text-slate-900">Politique d'accès employés</h3>
                     <span id="employee-limit-status"
                       class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600">—</span>
                   </div>
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div class="rounded-xl bg-slate-50 p-3">
+                    <div class="rounded-2xl bg-slate-50 p-4">
                       <p class="text-xs uppercase text-slate-400">Employés actifs</p>
-                      <p id="employee-current-count" class="text-2xl font-semibold text-slate-900">0</p>
+                      <p id="employee-current-count" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
                     </div>
-                    <div class="rounded-xl bg-slate-50 p-3">
+                    <div class="rounded-2xl bg-slate-50 p-4">
                       <div class="flex items-center justify-between">
-                        <p class="text-xs uppercase text-slate-400">Limite d'employés</p>
+                        <p class="text-xs uppercase text-slate-400">Limite</p>
                         <button id="employee-limit-save" type="button"
                           class="text-xs font-semibold text-cyan-600 hover:text-cyan-700">Enregistrer</button>
                       </div>
                       <input id="employee-limit-input" type="number" min="0" inputmode="numeric"
-                        class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+                        class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
                     </div>
-                    <div class="rounded-xl bg-slate-50 p-3">
+                    <div class="rounded-2xl bg-slate-50 p-4">
                       <p class="text-xs uppercase text-slate-400">Dépassement</p>
-                      <p id="employee-overage" class="text-2xl font-semibold text-slate-900">0</p>
+                      <p id="employee-overage" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
                     </div>
                   </div>
                   <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                     <button id="employee-limit-request" type="button"
-                      class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-600">
+                      class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-600">
                       Demander plus d'employés
                     </button>
                     <p id="employee-limit-helper" class="text-xs text-slate-400">
@@ -457,12 +624,20 @@
                   </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-100 p-4">
-                  <h3 class="text-sm font-semibold text-slate-700">Équipe</h3>
-                  <div id="customer-team-list" class="mt-3 space-y-2 text-sm text-slate-600"></div>
+                <div class="glass-panel rounded-[28px] p-6">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Équipe</p>
+                      <h3 class="mt-1 text-xl font-bold text-slate-950">Membres et administrateurs</h3>
+                    </div>
+                    <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-500">
+                      Modifier le nom, l'email ou le rôle
+                    </span>
+                  </div>
+                  <div id="customer-team-list" class="mt-5 space-y-3 text-sm text-slate-600"></div>
                 </div>
 
-                <div id="customer-admin-recovery-card" class="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 space-y-4 hidden">
+                <div id="customer-admin-recovery-card" class="rounded-[28px] border border-amber-200 bg-amber-50/70 p-5 space-y-4 hidden">
                   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                       <h3 class="text-sm font-semibold text-slate-800">Restauration admin</h3>
@@ -503,7 +678,7 @@
           </svg>
         </button>
       </div>
-      <p class="text-sm text-slate-500 mt-1">Attribuez les fonctionnalités disponibles pour ce client.</p>
+      <p class="text-sm text-slate-500 mt-1">Attribuez les fonctionnalités disponibles pour cette entreprise.</p>
       <div class="mt-4 space-y-3">
         <div class="flex flex-col sm:flex-row gap-3">
           <input id="access-modal-search" type="text" placeholder="Rechercher une fonctionnalité..."
@@ -625,6 +800,66 @@
           class="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">Annuler</button>
         <button id="employee-limit-request-submit" type="button"
           class="flex-1 rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-600">Envoyer la demande</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="member-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 hidden">
+    <div class="w-full max-w-2xl rounded-[28px] border border-white/60 bg-white/95 p-6 shadow-2xl backdrop-blur">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Équipe</p>
+          <h3 class="mt-1 text-xl font-bold text-slate-950">Modifier un membre</h3>
+        </div>
+        <button id="member-edit-modal-close" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <p class="mt-2 text-sm text-slate-500">Modifiez le nom, l’email, le rôle ou le statut. Les changements seront répercutés côté entreprise et profil utilisateur quand c’est possible.</p>
+      <input id="member-edit-key" type="hidden" />
+      <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+          <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="member-edit-fullname">Nom complet</label>
+          <input id="member-edit-fullname" type="text"
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="member-edit-email">Email</label>
+          <input id="member-edit-email" type="email"
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="member-edit-role">Rôle</label>
+          <select id="member-edit-role"
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400">
+            <option value="admin">Administrateur</option>
+            <option value="manager">Manager</option>
+            <option value="consultation">Consultation</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="member-edit-status">Statut</label>
+          <select id="member-edit-status"
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400">
+            <option value="actif">Actif</option>
+            <option value="inactive">Inactif</option>
+            <option value="inactif">Inactif</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400" for="member-edit-access-code">Code / mot de passe visible</label>
+          <input id="member-edit-access-code" type="text"
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
+        </div>
+      </div>
+      <p id="member-edit-meta" class="mt-4 text-xs text-slate-400">—</p>
+      <div class="mt-6 flex flex-col sm:flex-row gap-3">
+        <button id="member-edit-cancel" type="button"
+          class="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">Annuler</button>
+        <button id="member-edit-save" type="button"
+          class="flex-1 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">Enregistrer les modifications</button>
       </div>
     </div>
   </div>
@@ -911,19 +1146,35 @@
     const customerSearch = document.getElementById('customer-search');
     const customerList = document.getElementById('customer-list');
     const customerListEmpty = document.getElementById('customer-list-empty');
+    const customerCountBadge = document.getElementById('customer-count-badge');
     const customerDetailEmpty = document.getElementById('customer-detail-empty');
     const customerDetailContent = document.getElementById('customer-detail-content');
+    const customerHeroInitials = document.getElementById('customer-hero-initials');
+    const customerIdBadge = document.getElementById('customer-id-badge');
     const customerName = document.getElementById('customer-name');
     const customerContact = document.getElementById('customer-contact');
+    const customerPrimaryAdmin = document.getElementById('customer-primary-admin');
+    const customerCreatedChip = document.getElementById('customer-created-chip');
     const customerAdminsCount = document.getElementById('customer-admins-count');
     const customerEmployeesCount = document.getElementById('customer-employees-count');
     const customerStoresCount = document.getElementById('customer-stores-count');
     const customerBoutiquesCount = document.getElementById('customer-boutiques-count');
     const customerRevenue = document.getElementById('customer-revenue');
     const customerCreated = document.getElementById('customer-created');
+    const customerAccessSummary = document.getElementById('customer-access-summary');
     const customerAccessList = document.getElementById('customer-access-list');
     const customerTeamList = document.getElementById('customer-team-list');
+    const editCompanyButton = document.getElementById('edit-company-button');
+    const companyEssentialButton = document.getElementById('company-essential-button');
+    const companyFullAccessButton = document.getElementById('company-full-access-button');
     const manageAccessButton = document.getElementById('manage-access-button');
+    const companyNameInput = document.getElementById('company-name-input');
+    const companyDisplayNameInput = document.getElementById('company-display-name-input');
+    const companyContactEmailInput = document.getElementById('company-contact-email-input');
+    const companyContactPhoneInput = document.getElementById('company-contact-phone-input');
+    const companyAddressInput = document.getElementById('company-address-input');
+    const companyProfileMeta = document.getElementById('company-profile-meta');
+    const companyProfileSaveButton = document.getElementById('company-profile-save-button');
     const customerAdminRecoveryCard = document.getElementById('customer-admin-recovery-card');
     const customerAdminRecoverySelect = document.getElementById('customer-admin-recovery-select');
     const customerAdminRecoveryButton = document.getElementById('customer-admin-recovery-button');
@@ -971,6 +1222,18 @@
     const employeeLimitRequestNote = document.getElementById('employee-limit-request-note');
     const employeeLimitRequestSubmit = document.getElementById('employee-limit-request-submit');
 
+    const memberEditModal = document.getElementById('member-edit-modal');
+    const memberEditModalClose = document.getElementById('member-edit-modal-close');
+    const memberEditKey = document.getElementById('member-edit-key');
+    const memberEditFullname = document.getElementById('member-edit-fullname');
+    const memberEditEmail = document.getElementById('member-edit-email');
+    const memberEditRole = document.getElementById('member-edit-role');
+    const memberEditStatus = document.getElementById('member-edit-status');
+    const memberEditAccessCode = document.getElementById('member-edit-access-code');
+    const memberEditMeta = document.getElementById('member-edit-meta');
+    const memberEditCancel = document.getElementById('member-edit-cancel');
+    const memberEditSave = document.getElementById('member-edit-save');
+
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toast-message');
     function showToast(message, tone = 'success') {
@@ -1000,7 +1263,7 @@
         button.classList.toggle('text-slate-600', !isActive);
         if (!isActive) button.classList.remove('bg-cyan-500', 'text-white', 'shadow');
       });
-      if (pageTitle) pageTitle.textContent = page === 'customers' ? 'Customer' : 'Tableau de bord';
+      if (pageTitle) pageTitle.textContent = page === 'customers' ? 'Entreprises' : 'Tableau de bord';
     }
 
     function setAuthMode(isLogin) {
@@ -1095,7 +1358,7 @@
       return d.toISOString().slice(0, 10);
     }
 
-    function getCompanyName(company, fallback = 'Client') {
+    function getCompanyName(company, fallback = 'Entreprise') {
       return company?.companyName || company?.name || company?.displayName || fallback;
     }
 
@@ -1126,6 +1389,257 @@
         updatedAt: new Date().toISOString(),
         updatedBy: currentUser?.email || ''
       };
+    }
+
+    function normalizeDashboardRole(role) {
+      const normalized = (role || '').trim().toLowerCase();
+      if (normalized === 'admin') return 'admin';
+      if (normalized === 'manager') return 'manager';
+      return 'consultation';
+    }
+
+    function getDashboardRoleLabel(role) {
+      const normalized = normalizeDashboardRole(role);
+      if (normalized === 'admin') return 'Administrateur';
+      if (normalized === 'manager') return 'Manager';
+      return 'Consultation';
+    }
+
+    function getPermissionsForDashboardRole(role) {
+      const normalized = normalizeDashboardRole(role);
+      if (normalized === 'admin') return [...DEFAULT_ADMIN_PERMISSIONS];
+      if (normalized === 'manager') {
+        return [
+          'Tableau de bord',
+          'Ventes',
+          'Historique des ventes',
+          'Messagerie',
+          'Stock Boutique',
+          'Mon Magasin',
+          'Tableau des prix',
+          'Mouvements Magasin',
+          'Fournisseurs'
+        ];
+      }
+      return ['Tableau de bord', 'Messagerie'];
+    }
+
+    function getCompanyInitials(company) {
+      const name = getCompanyName(company, 'Entreprise').trim();
+      if (!name) return 'SP';
+      return name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0])
+        .join('')
+        .toUpperCase();
+    }
+
+    function resolveMemberUserId(member, memberKey = '') {
+      const fallbackUserId = typeof member?.id === 'string' && member.id.length > 24
+        ? member.id
+        : '';
+      return member?.uid || fallbackUserId || memberKey || '';
+    }
+
+    function getPrimaryAdminMember(members = []) {
+      const admins = members.filter(member => normalizeDashboardRole(member?.role) === 'admin');
+      if (!admins.length) return null;
+      return admins.sort((a, b) => {
+        const aName = a?.fullName || a?.name || a?.email || '';
+        const bName = b?.fullName || b?.name || b?.email || '';
+        return aName.localeCompare(bName);
+      })[0];
+    }
+
+    function buildPresetAccessSelections(mode = 'all') {
+      const selections = {};
+      ALL_FEATURE_IDS.forEach(id => {
+        if (mode === 'essential') {
+          selections[id] = ESSENTIAL_FEATURES.includes(id);
+          return;
+        }
+        if (mode === 'none') {
+          selections[id] = false;
+          return;
+        }
+        selections[id] = true;
+      });
+      return selections;
+    }
+
+    async function syncCompanyNameToUsers(company, nextCompanyName) {
+      const members = getMembers(company);
+      const writes = members
+        .map(member => resolveMemberUserId(member, member.memberKey))
+        .filter(Boolean)
+        .map(userId => update(ref(db, `users/${userId}`), {
+          companyName: nextCompanyName,
+          updatedAt: new Date().toISOString(),
+          updatedBy: currentUser?.email || ''
+        }).catch(error => ({ userId, error })));
+      if (!writes.length) return [];
+      return Promise.all(writes);
+    }
+
+    async function saveCompanyFeatureAccess(nextSelections, successMessage = 'Accès mis à jour.') {
+      const company = state.companies?.[selectedCompanyId];
+      if (!company) return;
+      await update(ref(db, `companies/${selectedCompanyId}`), {
+        featureAccess: nextSelections,
+        featureAccessUpdatedAt: new Date().toISOString(),
+        featureAccessUpdatedBy: currentUser?.email || ''
+      });
+      accessSelections = { ...nextSelections };
+      if (state.companies?.[selectedCompanyId]) {
+        state.companies[selectedCompanyId].featureAccess = { ...nextSelections };
+      }
+      renderCustomerDetail();
+      showToast(successMessage);
+    }
+
+    function focusCompanyIdentityEditor() {
+      if (companyNameInput) {
+        companyNameInput.focus();
+        companyNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    async function saveCompanyProfile() {
+      const company = state.companies?.[selectedCompanyId];
+      if (!company) return;
+
+      const companyName = (companyNameInput?.value || '').trim();
+      const displayName = (companyDisplayNameInput?.value || '').trim();
+      const contactEmail = (companyContactEmailInput?.value || '').trim();
+      const contactPhone = (companyContactPhoneInput?.value || '').trim();
+      const address = (companyAddressInput?.value || '').trim();
+
+      if (!companyName) {
+        showToast("Le nom de l'entreprise est requis.", 'error');
+        return;
+      }
+
+      const payload = {
+        companyName,
+        name: displayName || companyName,
+        displayName: displayName || companyName,
+        contactEmail,
+        email: contactEmail,
+        contactPhone,
+        whatsappPhone: contactPhone,
+        address,
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser?.email || ''
+      };
+
+      await update(ref(db, `companies/${selectedCompanyId}`), payload);
+      await syncCompanyNameToUsers(company, companyName);
+      if (state.companies?.[selectedCompanyId]) {
+        state.companies[selectedCompanyId] = {
+          ...state.companies[selectedCompanyId],
+          ...payload
+        };
+      }
+      renderCustomerList();
+      showToast("Identité de l'entreprise mise à jour.");
+    }
+
+    function openMemberEditModal(memberKey) {
+      const company = state.companies?.[selectedCompanyId];
+      const member = company?.members?.[memberKey];
+      if (!company || !member || !memberEditModal) return;
+
+      const normalizedRole = normalizeDashboardRole(member?.role);
+      if (memberEditKey) memberEditKey.value = memberKey;
+      if (memberEditFullname) memberEditFullname.value = member?.fullName || member?.name || '';
+      if (memberEditEmail) memberEditEmail.value = member?.email || '';
+      if (memberEditRole) memberEditRole.value = normalizedRole;
+      if (memberEditStatus) memberEditStatus.value = member?.status || 'actif';
+      if (memberEditAccessCode) memberEditAccessCode.value = member?.accessCode || '';
+      if (memberEditMeta) {
+        const userId = resolveMemberUserId(member, memberKey);
+        memberEditMeta.textContent = `Clé membre: ${memberKey} · UID: ${userId || 'non lié'} · Entreprise: ${getCompanyName(company, 'Entreprise')}`;
+      }
+      memberEditModal.classList.remove('hidden');
+    }
+
+    function closeMemberEditModal() {
+      if (!memberEditModal) return;
+      memberEditModal.classList.add('hidden');
+      if (memberEditKey) memberEditKey.value = '';
+    }
+
+    async function saveMemberEdit() {
+      const company = state.companies?.[selectedCompanyId];
+      const memberKey = memberEditKey?.value || '';
+      const existingMember = company?.members?.[memberKey];
+      if (!company || !memberKey || !existingMember) return;
+
+      const fullName = (memberEditFullname?.value || '').trim();
+      const email = (memberEditEmail?.value || '').trim();
+      const role = normalizeDashboardRole(memberEditRole?.value || existingMember?.role);
+      const status = (memberEditStatus?.value || existingMember?.status || 'actif').trim();
+      const accessCode = (memberEditAccessCode?.value || '').trim();
+
+      if (!fullName) {
+        showToast('Le nom du membre est requis.', 'error');
+        return;
+      }
+      if (!email) {
+        showToast("L'email du membre est requis.", 'error');
+        return;
+      }
+
+      const nextPermissions = getPermissionsForDashboardRole(role);
+      const nextMember = {
+        ...existingMember,
+        id: existingMember?.id || memberKey,
+        uid: existingMember?.uid || resolveMemberUserId(existingMember, memberKey),
+        fullName,
+        name: fullName,
+        email,
+        role,
+        status,
+        accessCode,
+        permissions: nextPermissions,
+        storeAccess: role === 'admin' ? [] : (Array.isArray(existingMember?.storeAccess) ? existingMember.storeAccess : []),
+        boutiqueAccess: role === 'admin' ? [] : (Array.isArray(existingMember?.boutiqueAccess) ? existingMember.boutiqueAccess : []),
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser?.email || ''
+      };
+
+      await update(ref(db, `companies/${selectedCompanyId}/members/${memberKey}`), nextMember);
+
+      const userId = resolveMemberUserId(nextMember, memberKey);
+      if (userId) {
+        await update(ref(db, `users/${userId}`), {
+          fullName,
+          name: fullName,
+          email,
+          role,
+          status,
+          accessCode,
+          permissions: nextPermissions,
+          storeAccess: nextMember.storeAccess,
+          boutiqueAccess: nextMember.boutiqueAccess,
+          companyId: selectedCompanyId,
+          companyName: getCompanyName(company, 'Entreprise'),
+          updatedAt: nextMember.updatedAt,
+          updatedBy: currentUser?.email || ''
+        });
+      }
+
+      if (state.companies?.[selectedCompanyId]?.members?.[memberKey]) {
+        state.companies[selectedCompanyId].members[memberKey] = {
+          ...state.companies[selectedCompanyId].members[memberKey],
+          ...nextMember
+        };
+      }
+      closeMemberEditModal();
+      renderCustomerDetail();
+      showToast('Membre mis à jour.');
     }
 
     function updateCustomerAdminRecoveryAction() {
@@ -1329,7 +1843,7 @@
       const requestRef = push(ref(db, 'access_limit_requests'));
       await set(requestRef, {
         companyId: selectedCompanyId,
-        companyName: getCompanyName(company, 'Client'),
+        companyName: getCompanyName(company, 'Entreprise'),
         currentLimit: limit,
         currentEmployees: employeeCount,
         requestedLimit: requested,
@@ -1976,33 +2490,55 @@
       });
 
       filtered.sort((a, b) => getCompanyName(a).localeCompare(getCompanyName(b)));
+      if (customerCountBadge) customerCountBadge.textContent = formatNumber(filtered.length);
 
       if (!filtered.length) {
+        selectedCompanyId = null;
         customerList.innerHTML = '';
         customerListEmpty.classList.remove('hidden');
       } else {
         customerListEmpty.classList.add('hidden');
         customerList.innerHTML = filtered.map(entry => {
-          const members = entry?.members || {};
-          const adminCount = Object.values(members).filter(member => (member?.role || '').toLowerCase() === 'admin').length;
+          const members = getMembers(entry);
+          const adminCount = members.filter(member => normalizeDashboardRole(member?.role) === 'admin').length;
+          const employeeCount = members.filter(member => normalizeDashboardRole(member?.role) !== 'admin').length;
           const storeCount = Object.keys(entry?.stores || {}).length;
           const boutiqueCount = Object.keys(entry?.boutiques || {}).length || (entry?.shopStock ? 1 : 0);
           const isActive = entry.id === selectedCompanyId;
+          const primaryAdmin = getPrimaryAdminMember(members);
+          const companyName = getCompanyName(entry, 'Entreprise');
+          const accentClasses = isActive
+            ? 'enterprise-list-card active'
+            : 'enterprise-list-card border-slate-100 bg-white/80';
           return `
-            <button data-id="${entry.id}" class="w-full text-left rounded-xl border ${isActive ? 'border-cyan-300 bg-cyan-50' : 'border-slate-100'} p-4 hover:border-cyan-200">
-              <div class="flex items-center justify-between gap-2">
-                <div>
-                  <p class="text-sm font-semibold text-slate-800">${getCompanyName(entry, 'Client')}</p>
-                  <p class="text-xs text-slate-400 mt-1">${entry?.contactName || entry?.ownerName || '—'}</p>
+            <button data-id="${entry.id}" class="w-full text-left rounded-2xl border p-4 ${accentClasses}">
+              <div class="flex items-start gap-3">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${isActive ? 'bg-cyan-500 text-white' : 'bg-slate-100 text-slate-700'} text-sm font-bold uppercase">
+                  ${getCompanyInitials(entry)}
                 </div>
-                <span class="text-xs font-semibold text-slate-500">${formatNumber(adminCount)} admin</span>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="truncate text-sm font-semibold text-slate-900">${companyName}</p>
+                      <p class="mt-1 truncate text-xs text-slate-500">${primaryAdmin?.fullName || primaryAdmin?.email || entry?.contactName || entry?.ownerName || 'Aucun admin principal'}</p>
+                    </div>
+                    <span class="shrink-0 rounded-full ${isActive ? 'bg-cyan-100 text-cyan-700' : 'bg-slate-100 text-slate-500'} px-2.5 py-1 text-[11px] font-semibold">${formatNumber(adminCount)} admin</span>
+                  </div>
+                  <div class="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-500">
+                    <span class="rounded-full bg-slate-100 px-2.5 py-1 font-medium">${formatNumber(employeeCount)} employés</span>
+                    <span class="rounded-full bg-slate-100 px-2.5 py-1 font-medium">${formatNumber(storeCount)} magasins</span>
+                    <span class="rounded-full bg-slate-100 px-2.5 py-1 font-medium">${formatNumber(boutiqueCount)} boutiques</span>
+                  </div>
+                </div>
               </div>
-              <p class="text-xs text-slate-400 mt-2">${formatNumber(storeCount)} magasins · ${formatNumber(boutiqueCount)} boutiques</p>
             </button>
           `;
         }).join('');
       }
 
+      if (selectedCompanyId && !filtered.some(entry => entry.id === selectedCompanyId)) {
+        selectedCompanyId = filtered[0]?.id || null;
+      }
       if (!selectedCompanyId && filtered.length) {
         selectedCompanyId = filtered[0].id;
       }
@@ -2015,49 +2551,87 @@
         customerDetailEmpty.classList.remove('hidden');
         customerDetailContent.classList.add('hidden');
         manageAccessButton.disabled = true;
+        if (editCompanyButton) editCompanyButton.disabled = true;
+        if (companyEssentialButton) companyEssentialButton.disabled = true;
+        if (companyFullAccessButton) companyFullAccessButton.disabled = true;
         if (employeeAccessCard) employeeAccessCard.classList.add('hidden');
         if (customerAdminRecoveryCard) customerAdminRecoveryCard.classList.add('hidden');
         return;
       }
 
       const members = getMembers(company);
-      const adminCount = members.filter(member => (member?.role || '').toLowerCase() === 'admin').length;
-      const employeeCount = members.filter(member => (member?.role || '').toLowerCase() !== 'admin').length;
+      const adminCount = members.filter(member => normalizeDashboardRole(member?.role) === 'admin').length;
+      const employeeCount = members.filter(member => normalizeDashboardRole(member?.role) !== 'admin').length;
       const storeCount = Object.keys(company?.stores || {}).length;
       const boutiqueCount = Object.keys(company?.boutiques || {}).length || (company?.shopStock ? 1 : 0);
       const revenueValue = company?.billing?.currentRevenue || company?.billing?.monthlyRevenue || computeRevenueFromSales(company);
+      const companyName = getCompanyName(company, 'Entreprise');
+      const primaryAdmin = getPrimaryAdminMember(members);
+      const createdDate = (() => {
+        const created = toDate(company?.createdAt || company?.created || company?.created_at);
+        return created ? created.toLocaleDateString('fr-FR', { dateStyle: 'medium' }) : '—';
+      })();
+      const contactParts = [
+        company?.contactEmail || company?.email || '',
+        company?.contactPhone || company?.whatsappPhone || '',
+        company?.address || ''
+      ].filter(Boolean);
+      const accessMap = company?.featureAccess || {};
+      const enabledCount = FEATURE_SECTIONS.reduce((count, section) => {
+        return count + section.items.filter(item => Object.keys(accessMap).length === 0 ? true : accessMap[item.id] !== false).length;
+      }, 0);
+      const totalFeatureCount = ALL_FEATURE_IDS.length;
 
       customerDetailEmpty.classList.add('hidden');
       customerDetailContent.classList.remove('hidden');
       manageAccessButton.disabled = false;
+      if (editCompanyButton) editCompanyButton.disabled = false;
+      if (companyEssentialButton) companyEssentialButton.disabled = false;
+      if (companyFullAccessButton) companyFullAccessButton.disabled = false;
 
-      customerName.textContent = getCompanyName(company, 'Client');
-      customerContact.textContent = company?.contactEmail || company?.email || company?.contactPhone || '—';
+      if (customerHeroInitials) customerHeroInitials.textContent = getCompanyInitials(company);
+      if (customerIdBadge) customerIdBadge.textContent = `ID ${selectedCompanyId?.slice(0, 8) || '—'}`;
+      customerName.textContent = companyName;
+      customerContact.textContent = contactParts.length ? contactParts.join(' · ') : 'Aucun contact renseigné';
+      if (customerPrimaryAdmin) {
+        customerPrimaryAdmin.textContent = `Admin principal: ${primaryAdmin?.fullName || primaryAdmin?.email || 'Non défini'}`;
+      }
+      if (customerCreatedChip) customerCreatedChip.textContent = `Créé: ${createdDate}`;
       customerAdminsCount.textContent = formatNumber(adminCount);
       customerEmployeesCount.textContent = formatNumber(employeeCount);
       customerStoresCount.textContent = formatNumber(storeCount);
       customerBoutiquesCount.textContent = formatNumber(boutiqueCount);
       customerRevenue.textContent = formatCurrency(parseFloat(revenueValue) || 0);
-      customerCreated.textContent = (() => {
-        const created = toDate(company?.createdAt || company?.created || company?.created_at);
-        return created ? created.toLocaleDateString('fr-FR', { dateStyle: 'medium' }) : '—';
-      })();
+      customerCreated.textContent = createdDate;
+      if (companyNameInput) companyNameInput.value = company?.companyName || company?.name || '';
+      if (companyDisplayNameInput) companyDisplayNameInput.value = company?.displayName || company?.name || company?.companyName || '';
+      if (companyContactEmailInput) companyContactEmailInput.value = company?.contactEmail || company?.email || '';
+      if (companyContactPhoneInput) companyContactPhoneInput.value = company?.contactPhone || company?.whatsappPhone || '';
+      if (companyAddressInput) companyAddressInput.value = company?.address || '';
+      if (companyProfileMeta) {
+        const updatedAt = company?.updatedAt ? formatDateTime(company.updatedAt) : 'jamais';
+        companyProfileMeta.textContent = `Entreprise liée à ${formatNumber(members.length)} membre(s). Dernière mise à jour: ${updatedAt}.`;
+      }
       renderAccessPolicyCard(company, employeeCount);
 
-      const accessMap = company?.featureAccess || {};
       const accessKeys = Object.keys(accessMap);
+      if (customerAccessSummary) customerAccessSummary.textContent = `${enabledCount} / ${totalFeatureCount} activés`;
       customerAccessList.innerHTML = FEATURE_SECTIONS.map(section => {
+        const enabledInSection = section.items.filter(item => accessKeys.length === 0 ? true : accessMap[item.id] !== false).length;
         const itemsHtml = section.items.map(item => {
           const enabled = accessKeys.length === 0 ? true : accessMap[item.id] !== false;
           return `
-            <span class="px-3 py-1 rounded-full text-xs ${enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}">
+            <span class="px-3 py-1 rounded-full text-xs font-medium ${enabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200'}">
               ${item.label}
             </span>
           `;
         }).join('');
         return `
-          <div class="space-y-2">
-            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">${section.label}</p>
+          <div class="rounded-2xl border border-slate-100 bg-white/70 p-4 space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">${section.label}</p>
+              <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">${enabledInSection}/${section.items.length}</span>
+            </div>
             <div class="flex flex-wrap gap-2">${itemsHtml}</div>
           </div>
         `;
@@ -2066,15 +2640,43 @@
       if (!members.length) {
         customerTeamList.innerHTML = '<p class="text-sm text-slate-400">Aucun collaborateur enregistré.</p>';
       } else {
-        customerTeamList.innerHTML = members.map(member => {
-          const role = member?.role || 'collaborateur';
+        customerTeamList.innerHTML = members
+          .sort((a, b) => {
+            const roleDelta = normalizeDashboardRole(a?.role) === 'admin' ? -1 : 0;
+            const otherDelta = normalizeDashboardRole(b?.role) === 'admin' ? -1 : 0;
+            if (roleDelta !== otherDelta) return roleDelta - otherDelta;
+            const aName = a?.fullName || a?.name || a?.email || '';
+            const bName = b?.fullName || b?.name || b?.email || '';
+            return aName.localeCompare(bName);
+          })
+          .map(member => {
+          const role = normalizeDashboardRole(member?.role);
+          const roleLabel = getDashboardRoleLabel(role);
+          const status = member?.status || 'actif';
+          const roleClasses = role === 'admin'
+            ? 'bg-cyan-50 text-cyan-700 border-cyan-100'
+            : role === 'manager'
+              ? 'bg-indigo-50 text-indigo-700 border-indigo-100'
+              : 'bg-slate-100 text-slate-600 border-slate-200';
           return `
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="font-semibold text-slate-700">${member.fullName || member.name || member.email}</p>
-                <p class="text-xs text-slate-400">${member.email || '—'}</p>
+            <div class="rounded-2xl border border-slate-100 bg-white/80 px-4 py-4 shadow-sm">
+              <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="font-semibold text-slate-800 truncate">${member.fullName || member.name || member.email}</p>
+                    <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${roleClasses}">${roleLabel}</span>
+                    <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500">${status}</span>
+                  </div>
+                  <p class="mt-1 text-xs text-slate-500">${member.email || '—'}</p>
+                  <p class="mt-2 text-[11px] text-slate-400">UID: ${resolveMemberUserId(member, member.memberKey) || 'non lié'} · Code: ${member.accessCode || '—'}</p>
+                </div>
+                <div class="flex items-center gap-2 lg:justify-end">
+                  <button type="button" data-action="edit-member" data-member-key="${member.memberKey}"
+                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50">
+                    Modifier
+                  </button>
+                </div>
               </div>
-              <span class="text-xs font-semibold text-slate-500">${role}</span>
             </div>
           `;
         }).join('');
@@ -2100,12 +2702,7 @@
     async function saveAccessChanges() {
       const company = state.companies?.[selectedCompanyId];
       if (!company) return;
-      await update(ref(db, `companies/${selectedCompanyId}`), {
-        featureAccess: accessSelections,
-        featureAccessUpdatedAt: new Date().toISOString(),
-        featureAccessUpdatedBy: currentUser?.email || ''
-      });
-      showToast('Accès mis à jour.');
+      await saveCompanyFeatureAccess(accessSelections, 'Accès mis à jour.');
       closeAccessModal();
     }
 
@@ -2140,7 +2737,7 @@
           storeAccess: [],
           boutiqueAccess: [],
           companyId: selectedCompanyId,
-          companyName: getCompanyName(company, 'Client'),
+          companyName: getCompanyName(company, 'Entreprise'),
           updatedAt: adminPayload.updatedAt,
           updatedBy: currentUser?.email || ''
         });
@@ -2318,8 +2915,31 @@
       });
     }
 
+    if (editCompanyButton) {
+      editCompanyButton.addEventListener('click', focusCompanyIdentityEditor);
+    }
+    if (companyProfileSaveButton) {
+      companyProfileSaveButton.addEventListener('click', saveCompanyProfile);
+    }
+    if (companyEssentialButton) {
+      companyEssentialButton.addEventListener('click', () => {
+        saveCompanyFeatureAccess(buildPresetAccessSelections('essential'), 'Accès réduits au niveau essentiel.');
+      });
+    }
+    if (companyFullAccessButton) {
+      companyFullAccessButton.addEventListener('click', () => {
+        saveCompanyFeatureAccess(buildPresetAccessSelections('all'), 'Tous les modules ont été ouverts.');
+      });
+    }
     if (manageAccessButton) {
       manageAccessButton.addEventListener('click', openAccessModal);
+    }
+    if (customerTeamList) {
+      customerTeamList.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action="edit-member"]');
+        if (!button) return;
+        openMemberEditModal(button.dataset.memberKey || '');
+      });
     }
     if (customerAdminRecoverySelect) {
       customerAdminRecoverySelect.addEventListener('change', updateCustomerAdminRecoveryAction);
@@ -2408,6 +3028,14 @@
     }
     if (employeeLimitRequestSubmit) {
       employeeLimitRequestSubmit.addEventListener('click', submitEmployeeLimitRequest);
+    }
+    if (memberEditModalClose) memberEditModalClose.addEventListener('click', closeMemberEditModal);
+    if (memberEditCancel) memberEditCancel.addEventListener('click', closeMemberEditModal);
+    if (memberEditSave) memberEditSave.addEventListener('click', saveMemberEdit);
+    if (memberEditModal) {
+      memberEditModal.addEventListener('click', (event) => {
+        if (event.target === memberEditModal) closeMemberEditModal();
+      });
     }
 
     if (planRequestsTbody) {
