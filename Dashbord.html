@@ -499,6 +499,26 @@
                   </div>
                 </div>
 
+                <div id="customer-merge-alert-card" class="hidden rounded-[28px] border border-amber-200 bg-amber-50/80 p-5 space-y-4">
+                  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div>
+                      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">Fusion suggérée</p>
+                      <h3 class="mt-1 text-lg font-bold text-slate-900">Doublon probable détecté</h3>
+                      <p id="customer-merge-alert-description" class="mt-2 text-sm text-slate-600">
+                        Une autre entreprise semble représenter le même compte. Vérifiez avant toute fusion.
+                      </p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span id="customer-merge-alert-score" class="inline-flex items-center rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-700">Score —</span>
+                      <button id="customer-merge-alert-button" type="button"
+                        class="inline-flex items-center justify-center rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-600">
+                        Examiner la fusion
+                      </button>
+                    </div>
+                  </div>
+                  <div id="customer-merge-alert-reasons" class="flex flex-wrap gap-2"></div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
                   <div class="metric-tile rounded-3xl p-5">
                     <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Admins</p>
@@ -668,9 +688,9 @@
     </div>
   </div>
 
-  <div id="access-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
-      <div class="flex items-center justify-between">
+  <div id="access-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-6 pt-6">
         <h3 class="text-lg font-semibold text-slate-900">Gérer les accès</h3>
         <button id="access-modal-close" class="text-slate-400 hover:text-slate-600">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -678,8 +698,8 @@
           </svg>
         </button>
       </div>
-      <p class="text-sm text-slate-500 mt-1">Attribuez les fonctionnalités disponibles pour cette entreprise.</p>
-      <div class="mt-4 space-y-3">
+      <p class="text-sm text-slate-500 mt-1 px-6">Attribuez les fonctionnalités disponibles pour cette entreprise.</p>
+      <div class="mt-4 space-y-3 px-6">
         <div class="flex flex-col sm:flex-row gap-3">
           <input id="access-modal-search" type="text" placeholder="Rechercher une fonctionnalité..."
             class="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" />
@@ -694,8 +714,8 @@
         </div>
         <div id="access-modal-stats" class="text-xs text-slate-500">0 activé</div>
       </div>
-      <div id="access-modal-list" class="mt-4 space-y-3"></div>
-      <div class="mt-6 flex gap-3">
+      <div id="access-modal-list" class="mt-4 flex-1 min-h-0 overflow-y-auto px-6 pb-2 space-y-3 overscroll-contain"></div>
+      <div class="mt-4 flex gap-3 border-t border-slate-100 px-6 py-5 bg-white">
         <button id="access-modal-cancel" class="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">Annuler</button>
         <button id="access-modal-save" class="flex-1 rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-600">Enregistrer</button>
       </div>
@@ -860,6 +880,68 @@
           class="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">Annuler</button>
         <button id="member-edit-save" type="button"
           class="flex-1 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">Enregistrer les modifications</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="company-merge-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 p-4">
+    <div class="w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-[28px] border border-white/60 bg-white/95 shadow-2xl backdrop-blur flex flex-col">
+      <div class="flex items-center justify-between gap-3 px-6 pt-6">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Fusion d'entreprise</p>
+          <h3 class="mt-1 text-xl font-bold text-slate-950">Vérification avant fusion</h3>
+        </div>
+        <button id="company-merge-modal-close" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="px-6 pb-2">
+        <p id="company-merge-summary" class="text-sm text-slate-500">
+          Vérifiez les similitudes détectées. La fusion crée une sauvegarde puis réunit les membres et les données sous un nom unique.
+        </p>
+      </div>
+      <div class="flex-1 min-h-0 overflow-y-auto px-6 pb-4 space-y-5">
+        <div id="company-merge-reasons" class="flex flex-wrap gap-2"></div>
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div class="rounded-[24px] border border-emerald-200 bg-emerald-50/70 p-5">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Entreprise conservée</p>
+                <h4 id="company-merge-target-title" class="mt-1 text-lg font-bold text-slate-900">—</h4>
+              </div>
+              <span class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700">Cible</span>
+            </div>
+            <div id="company-merge-target-details" class="mt-4 space-y-2 text-sm text-slate-600"></div>
+          </div>
+          <div class="rounded-[24px] border border-rose-200 bg-rose-50/70 p-5">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-rose-700">Entreprise absorbée</p>
+                <h4 id="company-merge-source-title" class="mt-1 text-lg font-bold text-slate-900">—</h4>
+              </div>
+              <span class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-rose-700">Source</span>
+            </div>
+            <div id="company-merge-source-details" class="mt-4 space-y-2 text-sm text-slate-600"></div>
+          </div>
+        </div>
+        <div class="rounded-[24px] border border-slate-200 bg-slate-50 p-5 space-y-3">
+          <h4 class="text-sm font-semibold text-slate-900">Ce que la fusion va faire</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600">
+            <div class="rounded-2xl bg-white p-4">Unifier le nom d'entreprise et les contacts.</div>
+            <div class="rounded-2xl bg-white p-4">Fusionner les membres en évitant les doublons par email / UID.</div>
+            <div class="rounded-2xl bg-white p-4">Réunir ventes, stocks, magasins, boutiques et paramètres.</div>
+            <div class="rounded-2xl bg-white p-4">Créer une sauvegarde avant suppression de l'espace absorbé.</div>
+          </div>
+          <p class="text-xs text-slate-400">La fusion n'est pas automatique. Elle ne s'exécute qu'après confirmation explicite.</p>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3 border-t border-slate-100 px-6 py-5 bg-white">
+        <button id="company-merge-cancel" type="button"
+          class="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">Annuler</button>
+        <button id="company-merge-confirm" type="button"
+          class="flex-1 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">Confirmer la fusion</button>
       </div>
     </div>
   </div>
@@ -1089,6 +1171,7 @@
     let presenceInterval = null;
     let accessSelections = {};
     let accessModalQuery = '';
+    let mergePreview = null;
 
     const authPage = document.getElementById('auth-page');
     const appContainer = document.getElementById('app-container');
@@ -1180,6 +1263,11 @@
     const customerAdminRecoveryButton = document.getElementById('customer-admin-recovery-button');
     const customerAdminRecoveryHelp = document.getElementById('customer-admin-recovery-help');
     const customerAdminRecoveryEmpty = document.getElementById('customer-admin-recovery-empty');
+    const customerMergeAlertCard = document.getElementById('customer-merge-alert-card');
+    const customerMergeAlertDescription = document.getElementById('customer-merge-alert-description');
+    const customerMergeAlertScore = document.getElementById('customer-merge-alert-score');
+    const customerMergeAlertReasons = document.getElementById('customer-merge-alert-reasons');
+    const customerMergeAlertButton = document.getElementById('customer-merge-alert-button');
 
     const accessModal = document.getElementById('access-modal');
     const accessModalList = document.getElementById('access-modal-list');
@@ -1233,6 +1321,16 @@
     const memberEditMeta = document.getElementById('member-edit-meta');
     const memberEditCancel = document.getElementById('member-edit-cancel');
     const memberEditSave = document.getElementById('member-edit-save');
+    const companyMergeModal = document.getElementById('company-merge-modal');
+    const companyMergeModalClose = document.getElementById('company-merge-modal-close');
+    const companyMergeSummary = document.getElementById('company-merge-summary');
+    const companyMergeReasons = document.getElementById('company-merge-reasons');
+    const companyMergeTargetTitle = document.getElementById('company-merge-target-title');
+    const companyMergeTargetDetails = document.getElementById('company-merge-target-details');
+    const companyMergeSourceTitle = document.getElementById('company-merge-source-title');
+    const companyMergeSourceDetails = document.getElementById('company-merge-source-details');
+    const companyMergeCancel = document.getElementById('company-merge-cancel');
+    const companyMergeConfirm = document.getElementById('company-merge-confirm');
 
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toast-message');
@@ -1451,6 +1549,493 @@
         const bName = b?.fullName || b?.name || b?.email || '';
         return aName.localeCompare(bName);
       })[0];
+    }
+
+    function normalizeCompanyNameForMatch(value = '') {
+      return (value || '')
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+    }
+
+    function normalizePhoneForMatch(value = '') {
+      return (value || '').toString().replace(/\D+/g, '');
+    }
+
+    function isPlainObject(value) {
+      return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+    }
+
+    function isMeaningfulValue(value) {
+      if (Array.isArray(value)) return value.length > 0;
+      if (isPlainObject(value)) return Object.keys(value).length > 0;
+      return value !== undefined && value !== null && value !== '';
+    }
+
+    function pickPreferredValue(...values) {
+      for (const value of values) {
+        if (isMeaningfulValue(value)) return value;
+      }
+      return values[values.length - 1];
+    }
+
+    function mergeUniqueArray(...arrays) {
+      return Array.from(new Set(arrays.flat().filter(item => item !== undefined && item !== null && item !== '')));
+    }
+
+    function deepMergePreferTarget(targetValue, sourceValue) {
+      if (Array.isArray(targetValue) || Array.isArray(sourceValue)) {
+        const targetArray = Array.isArray(targetValue) ? targetValue : [];
+        const sourceArray = Array.isArray(sourceValue) ? sourceValue : [];
+        return mergeUniqueArray(targetArray, sourceArray);
+      }
+
+      if (isPlainObject(targetValue) || isPlainObject(sourceValue)) {
+        const targetObject = isPlainObject(targetValue) ? targetValue : {};
+        const sourceObject = isPlainObject(sourceValue) ? sourceValue : {};
+        const merged = { ...targetObject };
+        Object.keys(sourceObject).forEach(key => {
+          if (!(key in merged)) {
+            merged[key] = sourceObject[key];
+            return;
+          }
+          merged[key] = deepMergePreferTarget(merged[key], sourceObject[key]);
+        });
+        return merged;
+      }
+
+      return isMeaningfulValue(targetValue) ? targetValue : sourceValue;
+    }
+
+    function getCompanySalesCount(company) {
+      return Object.keys(company?.salesHistory || {}).length;
+    }
+
+    function getCompanyMemberEmails(company) {
+      return getMembers(company)
+        .map(member => normalizeEmail(member?.email))
+        .filter(Boolean);
+    }
+
+    function getCompanyContactEmailSet(company) {
+      return Array.from(new Set([
+        normalizeEmail(company?.contactEmail),
+        normalizeEmail(company?.email),
+        ...getCompanyMemberEmails(company)
+      ].filter(Boolean)));
+    }
+
+    function getRolePriority(role) {
+      const normalized = normalizeDashboardRole(role);
+      if (normalized === 'admin') return 3;
+      if (normalized === 'manager') return 2;
+      return 1;
+    }
+
+    function chooseHigherRole(roleA, roleB) {
+      return getRolePriority(roleA) >= getRolePriority(roleB)
+        ? normalizeDashboardRole(roleA)
+        : normalizeDashboardRole(roleB);
+    }
+
+    function mergePermissions(...permissionSets) {
+      return mergeUniqueArray(...permissionSets.map(list => Array.isArray(list) ? list : []));
+    }
+
+    function mergeStatus(statusA, statusB) {
+      const values = [statusA, statusB].map(value => (value || '').toString().trim()).filter(Boolean);
+      if (!values.length) return 'actif';
+      if (values.includes('actif')) return 'actif';
+      if (values.includes('active')) return 'active';
+      if (values.includes('inactive')) return 'inactive';
+      return values[0];
+    }
+
+    function buildCompanyMergeCandidate(companyId, otherCompanyId) {
+      if (!companyId || !otherCompanyId || companyId === otherCompanyId) return null;
+      const company = state.companies?.[companyId];
+      const other = state.companies?.[otherCompanyId];
+      if (!company || !other) return null;
+
+      const normalizedName = normalizeCompanyNameForMatch(getCompanyName(company, ''));
+      const normalizedOtherName = normalizeCompanyNameForMatch(getCompanyName(other, ''));
+      const companyMembers = getMembers(company);
+      const otherMembers = getMembers(other);
+      const companyEmails = new Set(getCompanyMemberEmails(company));
+      const otherEmails = new Set(getCompanyMemberEmails(other));
+      const sharedEmails = Array.from(companyEmails).filter(email => otherEmails.has(email));
+      const primaryAdmin = getPrimaryAdminMember(company);
+      const otherPrimaryAdmin = getPrimaryAdminMember(other);
+      const primaryAdminEmail = normalizeEmail(primaryAdmin?.email);
+      const otherPrimaryAdminEmail = normalizeEmail(otherPrimaryAdmin?.email);
+      const companyContactEmail = normalizeEmail(company?.contactEmail || company?.email);
+      const otherContactEmail = normalizeEmail(other?.contactEmail || other?.email);
+      const companyPhone = normalizePhoneForMatch(company?.contactPhone || company?.whatsappPhone);
+      const otherPhone = normalizePhoneForMatch(other?.contactPhone || other?.whatsappPhone);
+
+      let score = 0;
+      const reasons = [];
+
+      if (normalizedName && normalizedOtherName && normalizedName === normalizedOtherName) {
+        score += 45;
+        reasons.push(`Même nom d'entreprise: ${getCompanyName(company, 'Entreprise')}`);
+      }
+
+      if (sharedEmails.length) {
+        score += Math.min(50, 20 + ((sharedEmails.length - 1) * 10));
+        reasons.push(`${sharedEmails.length} email(s) membre(s) en commun`);
+      }
+
+      if (primaryAdminEmail && otherPrimaryAdminEmail && primaryAdminEmail === otherPrimaryAdminEmail) {
+        score += 30;
+        reasons.push(`Même admin principal: ${primaryAdmin?.email || '—'}`);
+      }
+
+      if (companyContactEmail && otherContactEmail && companyContactEmail === otherContactEmail) {
+        score += 22;
+        reasons.push(`Même email de contact: ${companyContactEmail}`);
+      }
+
+      if (companyPhone && otherPhone && companyPhone === otherPhone) {
+        score += 14;
+        reasons.push('Même numéro de téléphone / WhatsApp');
+      }
+
+      if ((!normalizedName || !normalizedOtherName) && (sharedEmails.length || (companyContactEmail && companyContactEmail === otherContactEmail))) {
+        score += 18;
+        reasons.push("Un des espaces n'a pas de nom fiable, mais les contacts semblent identiques");
+      }
+
+      const companyStores = Object.keys(company?.stores || {}).length;
+      const otherStores = Object.keys(other?.stores || {}).length;
+      const companyBoutiques = Object.keys(company?.boutiques || {}).length || (company?.shopStock ? 1 : 0);
+      const otherBoutiques = Object.keys(other?.boutiques || {}).length || (other?.shopStock ? 1 : 0);
+      const companySales = getCompanySalesCount(company);
+      const otherSales = getCompanySalesCount(other);
+      if ((companyStores && companyStores === otherStores) || (companyBoutiques && companyBoutiques === otherBoutiques) || (companySales && companySales === otherSales)) {
+        score += 8;
+        reasons.push('Volumes de données proches (magasins, boutiques ou ventes)');
+      }
+
+      if (score < 35) return null;
+
+      return {
+        companyId,
+        otherCompanyId,
+        score,
+        reasons,
+        sharedEmails,
+        sharedCount: sharedEmails.length,
+        companyMembersCount: companyMembers.length,
+        otherMembersCount: otherMembers.length
+      };
+    }
+
+    function getMergeCandidatesForCompany(companyId) {
+      return Object.keys(state.companies || {})
+        .filter(otherCompanyId => otherCompanyId !== companyId)
+        .map(otherCompanyId => buildCompanyMergeCandidate(companyId, otherCompanyId))
+        .filter(Boolean)
+        .sort((a, b) => b.score - a.score);
+    }
+
+    function getCompanyRichnessScore(company) {
+      if (!company) return 0;
+      const members = getMembers(company).length;
+      const stores = Object.keys(company?.stores || {}).length;
+      const boutiques = Object.keys(company?.boutiques || {}).length || (company?.shopStock ? 1 : 0);
+      const sales = getCompanySalesCount(company);
+      const hasName = normalizeCompanyNameForMatch(getCompanyName(company, '')) ? 1 : 0;
+      const hasContact = normalizeEmail(company?.contactEmail || company?.email) ? 1 : 0;
+      return (hasName * 40) + (hasContact * 10) + (members * 8) + (stores * 5) + (boutiques * 4) + Math.min(20, sales);
+    }
+
+    function chooseMergeDirection(primaryId, secondaryId) {
+      const primary = state.companies?.[primaryId];
+      const secondary = state.companies?.[secondaryId];
+      if (!primary || !secondary) return null;
+
+      const primaryScore = getCompanyRichnessScore(primary);
+      const secondaryScore = getCompanyRichnessScore(secondary);
+      if (secondaryScore > primaryScore) {
+        return { targetId: secondaryId, targetCompany: secondary, sourceId: primaryId, sourceCompany: primary };
+      }
+      return { targetId: primaryId, targetCompany: primary, sourceId: secondaryId, sourceCompany: secondary };
+    }
+
+    function mergeMembersForCompanies(targetCompany, sourceCompany) {
+      const mergedMembers = {};
+      const keyByEmail = new Map();
+      const keyByUid = new Map();
+
+      const indexMember = (key, member) => {
+        const email = normalizeEmail(member?.email);
+        const uid = resolveMemberUserId(member, key);
+        if (email) keyByEmail.set(email, key);
+        if (uid) keyByUid.set(uid, key);
+      };
+
+      const addOrMergeMember = (member, originalKey) => {
+        const email = normalizeEmail(member?.email);
+        const uid = resolveMemberUserId(member, originalKey);
+        const existingKey = (uid && keyByUid.get(uid)) || (email && keyByEmail.get(email)) || '';
+
+        if (!existingKey) {
+          const nextKey = uid || originalKey;
+          const nextMember = {
+            ...member,
+            id: member?.id || uid || originalKey,
+            uid: uid || member?.uid || '',
+            fullName: pickPreferredValue(member?.fullName, member?.name, getNameFromEmail(email || '', 'Utilisateur')),
+            name: pickPreferredValue(member?.name, member?.fullName, getNameFromEmail(email || '', 'Utilisateur')),
+            email: member?.email || '',
+            role: normalizeDashboardRole(member?.role),
+            status: member?.status || 'actif',
+            permissions: mergePermissions(member?.permissions),
+            storeAccess: Array.isArray(member?.storeAccess) ? [...member.storeAccess] : [],
+            boutiqueAccess: Array.isArray(member?.boutiqueAccess) ? [...member.boutiqueAccess] : []
+          };
+          mergedMembers[nextKey] = nextMember;
+          indexMember(nextKey, nextMember);
+          return;
+        }
+
+        const existing = mergedMembers[existingKey];
+        const role = chooseHigherRole(existing?.role, member?.role);
+        mergedMembers[existingKey] = {
+          ...existing,
+          ...member,
+          id: pickPreferredValue(existing?.id, member?.id, existingKey),
+          uid: pickPreferredValue(existing?.uid, member?.uid, uid),
+          fullName: pickPreferredValue(existing?.fullName, existing?.name, member?.fullName, member?.name, getNameFromEmail(email || '', 'Utilisateur')),
+          name: pickPreferredValue(existing?.name, existing?.fullName, member?.name, member?.fullName, getNameFromEmail(email || '', 'Utilisateur')),
+          email: pickPreferredValue(existing?.email, member?.email, ''),
+          role,
+          status: mergeStatus(existing?.status, member?.status),
+          accessCode: pickPreferredValue(existing?.accessCode, member?.accessCode, ''),
+          permissions: role === 'admin'
+            ? [...DEFAULT_ADMIN_PERMISSIONS]
+            : mergePermissions(existing?.permissions, member?.permissions, getPermissionsForDashboardRole(role)),
+          storeAccess: role === 'admin'
+            ? []
+            : mergeUniqueArray(existing?.storeAccess || [], member?.storeAccess || []),
+          boutiqueAccess: role === 'admin'
+            ? []
+            : mergeUniqueArray(existing?.boutiqueAccess || [], member?.boutiqueAccess || [])
+        };
+        indexMember(existingKey, mergedMembers[existingKey]);
+      };
+
+      Object.entries(targetCompany?.members || {}).forEach(([memberKey, member]) => addOrMergeMember(member, memberKey));
+      Object.entries(sourceCompany?.members || {}).forEach(([memberKey, member]) => addOrMergeMember(member, memberKey));
+      return mergedMembers;
+    }
+
+    function buildMergedFeatureAccess(targetCompany, sourceCompany) {
+      const targetAccess = buildAccessSelections(targetCompany);
+      const sourceAccess = buildAccessSelections(sourceCompany);
+      const merged = {};
+      ALL_FEATURE_IDS.forEach(id => {
+        merged[id] = Boolean(targetAccess[id] || sourceAccess[id]);
+      });
+      return merged;
+    }
+
+    function buildCompanySummaryLines(company, companyId) {
+      const members = getMembers(company);
+      const adminCount = members.filter(member => normalizeDashboardRole(member?.role) === 'admin').length;
+      const employeeCount = members.filter(member => normalizeDashboardRole(member?.role) !== 'admin').length;
+      const stores = Object.keys(company?.stores || {}).length;
+      const boutiques = Object.keys(company?.boutiques || {}).length || (company?.shopStock ? 1 : 0);
+      const sales = getCompanySalesCount(company);
+      const contactEmail = company?.contactEmail || company?.email || '—';
+      return [
+        `ID: ${companyId}`,
+        `Nom: ${getCompanyName(company, 'Entreprise') || '—'}`,
+        `Contact: ${contactEmail}`,
+        `Équipe: ${formatNumber(adminCount)} admin · ${formatNumber(employeeCount)} employé(s)`,
+        `Données: ${formatNumber(stores)} magasin(s) · ${formatNumber(boutiques)} boutique(s) · ${formatNumber(sales)} vente(s)`
+      ];
+    }
+
+    function buildMergedCompanyPayload(targetId, targetCompany, sourceId, sourceCompany) {
+      const mergedMembers = mergeMembersForCompanies(targetCompany, sourceCompany);
+      const companyName = pickPreferredValue(
+        targetCompany?.companyName,
+        targetCompany?.name,
+        targetCompany?.displayName,
+        sourceCompany?.companyName,
+        sourceCompany?.name,
+        sourceCompany?.displayName,
+        'Entreprise'
+      );
+
+      const merged = deepMergePreferTarget(targetCompany, sourceCompany);
+      merged.id = targetId;
+      merged.companyName = companyName;
+      merged.name = pickPreferredValue(targetCompany?.name, targetCompany?.displayName, targetCompany?.companyName, sourceCompany?.name, sourceCompany?.displayName, sourceCompany?.companyName, companyName);
+      merged.displayName = pickPreferredValue(targetCompany?.displayName, targetCompany?.name, targetCompany?.companyName, sourceCompany?.displayName, sourceCompany?.name, sourceCompany?.companyName, companyName);
+      merged.contactEmail = pickPreferredValue(targetCompany?.contactEmail, targetCompany?.email, sourceCompany?.contactEmail, sourceCompany?.email, '');
+      merged.email = pickPreferredValue(targetCompany?.email, targetCompany?.contactEmail, sourceCompany?.email, sourceCompany?.contactEmail, '');
+      merged.contactPhone = pickPreferredValue(targetCompany?.contactPhone, targetCompany?.whatsappPhone, sourceCompany?.contactPhone, sourceCompany?.whatsappPhone, '');
+      merged.whatsappPhone = pickPreferredValue(targetCompany?.whatsappPhone, targetCompany?.contactPhone, sourceCompany?.whatsappPhone, sourceCompany?.contactPhone, '');
+      merged.address = pickPreferredValue(targetCompany?.address, sourceCompany?.address, '');
+      merged.ownerEmail = pickPreferredValue(targetCompany?.ownerEmail, sourceCompany?.ownerEmail, merged.contactEmail);
+      merged.ownerRole = pickPreferredValue(targetCompany?.ownerRole, sourceCompany?.ownerRole, '');
+      merged.status = pickPreferredValue(targetCompany?.status, sourceCompany?.status, 'active');
+      merged.members = mergedMembers;
+      merged.featureAccess = buildMergedFeatureAccess(targetCompany, sourceCompany);
+      merged.employeesLimit = Math.max(getEmployeeLimit(targetCompany), getEmployeeLimit(sourceCompany), 0);
+      merged.updatedAt = new Date().toISOString();
+      merged.updatedBy = currentUser?.email || '';
+      merged.mergedFrom = mergeUniqueArray(targetCompany?.mergedFrom || [], sourceCompany?.mergedFrom || [], [sourceId]);
+      return merged;
+    }
+
+    function renderMergeAlertForSelectedCompany() {
+      if (!customerMergeAlertCard || !customerMergeAlertButton || !customerMergeAlertReasons) return;
+      const company = state.companies?.[selectedCompanyId];
+      if (!company) {
+        customerMergeAlertCard.classList.add('hidden');
+        mergePreview = null;
+        return;
+      }
+
+      const candidates = getMergeCandidatesForCompany(selectedCompanyId);
+      const topCandidate = candidates[0];
+      if (!topCandidate) {
+        customerMergeAlertCard.classList.add('hidden');
+        mergePreview = null;
+        return;
+      }
+
+      const direction = chooseMergeDirection(topCandidate.companyId, topCandidate.otherCompanyId);
+      if (!direction) {
+        customerMergeAlertCard.classList.add('hidden');
+        mergePreview = null;
+        return;
+      }
+
+      const otherCompany = state.companies?.[topCandidate.otherCompanyId];
+      mergePreview = {
+        ...topCandidate,
+        ...direction,
+        candidateCount: candidates.length
+      };
+
+      customerMergeAlertCard.classList.remove('hidden');
+      if (customerMergeAlertDescription) {
+        customerMergeAlertDescription.textContent = `${getCompanyName(company, 'Entreprise')} ressemble fortement à ${getCompanyName(otherCompany, 'Entreprise')}. Vérifiez les données avant de fusionner les deux espaces.`;
+      }
+      if (customerMergeAlertScore) {
+        customerMergeAlertScore.textContent = `Score ${topCandidate.score}${candidates.length > 1 ? ` · ${candidates.length} candidat(s)` : ''}`;
+      }
+      customerMergeAlertReasons.innerHTML = topCandidate.reasons
+        .slice(0, 4)
+        .map(reason => `<span class="inline-flex items-center rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-700">${reason}</span>`)
+        .join('');
+    }
+
+    function openCompanyMergeModal() {
+      if (!companyMergeModal || !mergePreview) return;
+      const targetCompany = state.companies?.[mergePreview.targetId];
+      const sourceCompany = state.companies?.[mergePreview.sourceId];
+      if (!targetCompany || !sourceCompany) return;
+
+      if (companyMergeSummary) {
+        companyMergeSummary.textContent = `La fusion conservera ${getCompanyName(targetCompany, 'Entreprise')} comme entreprise principale et absorbera ${getCompanyName(sourceCompany, 'Entreprise')}. Une sauvegarde sera créée avant la suppression de l'espace absorbé.`;
+      }
+      if (companyMergeReasons) {
+        companyMergeReasons.innerHTML = mergePreview.reasons
+          .map(reason => `<span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">${reason}</span>`)
+          .join('');
+      }
+      if (companyMergeTargetTitle) companyMergeTargetTitle.textContent = getCompanyName(targetCompany, 'Entreprise');
+      if (companyMergeSourceTitle) companyMergeSourceTitle.textContent = getCompanyName(sourceCompany, 'Entreprise');
+      if (companyMergeTargetDetails) {
+        companyMergeTargetDetails.innerHTML = buildCompanySummaryLines(targetCompany, mergePreview.targetId)
+          .map(line => `<p>${line}</p>`)
+          .join('');
+      }
+      if (companyMergeSourceDetails) {
+        companyMergeSourceDetails.innerHTML = buildCompanySummaryLines(sourceCompany, mergePreview.sourceId)
+          .map(line => `<p>${line}</p>`)
+          .join('');
+      }
+
+      companyMergeModal.classList.remove('hidden');
+      companyMergeModal.classList.add('flex');
+    }
+
+    function closeCompanyMergeModal() {
+      if (!companyMergeModal) return;
+      companyMergeModal.classList.add('hidden');
+      companyMergeModal.classList.remove('flex');
+    }
+
+    async function executeCompanyMerge() {
+      if (!mergePreview) return;
+      const { targetId, sourceId } = mergePreview;
+      const targetCompany = state.companies?.[targetId];
+      const sourceCompany = state.companies?.[sourceId];
+      if (!targetCompany || !sourceCompany) {
+        showToast('Impossible de préparer la fusion.', 'error');
+        return;
+      }
+
+      const backupRef = push(ref(db, 'company_merge_backups'));
+      const backupId = backupRef.key;
+      if (!backupId) {
+        showToast('Impossible de créer la sauvegarde.', 'error');
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const mergedCompany = buildMergedCompanyPayload(targetId, targetCompany, sourceId, sourceCompany);
+      const rootUpdates = {
+        [`company_merge_backups/${backupId}`]: {
+          createdAt: now,
+          createdBy: currentUser?.email || '',
+          targetId,
+          sourceId,
+          targetCompanyName: getCompanyName(targetCompany, 'Entreprise'),
+          sourceCompanyName: getCompanyName(sourceCompany, 'Entreprise'),
+          reasonScore: mergePreview.score,
+          reasonList: mergePreview.reasons,
+          snapshot: {
+            target: targetCompany,
+            source: sourceCompany
+          }
+        },
+        [`companies/${targetId}`]: mergedCompany,
+        [`companies/${sourceId}`]: null
+      };
+
+      getMembers(mergedCompany).forEach(member => {
+        const userId = resolveMemberUserId(member, member.memberKey);
+        if (!userId) return;
+        rootUpdates[`users/${userId}/companyId`] = targetId;
+        rootUpdates[`users/${userId}/companyName`] = mergedCompany.companyName || getCompanyName(mergedCompany, 'Entreprise');
+        rootUpdates[`users/${userId}/fullName`] = member.fullName || member.name || '';
+        rootUpdates[`users/${userId}/name`] = member.name || member.fullName || '';
+        rootUpdates[`users/${userId}/email`] = member.email || '';
+        rootUpdates[`users/${userId}/role`] = member.role || 'consultation';
+        rootUpdates[`users/${userId}/status`] = member.status || 'actif';
+        rootUpdates[`users/${userId}/permissions`] = Array.isArray(member.permissions) ? member.permissions : [];
+        rootUpdates[`users/${userId}/storeAccess`] = Array.isArray(member.storeAccess) ? member.storeAccess : [];
+        rootUpdates[`users/${userId}/boutiqueAccess`] = Array.isArray(member.boutiqueAccess) ? member.boutiqueAccess : [];
+        rootUpdates[`users/${userId}/accessCode`] = member.accessCode || '';
+        rootUpdates[`users/${userId}/updatedAt`] = now;
+        rootUpdates[`users/${userId}/updatedBy`] = currentUser?.email || '';
+      });
+
+      await update(ref(db), rootUpdates);
+      selectedCompanyId = targetId;
+      closeCompanyMergeModal();
+      showToast(`Fusion terminée. ${getCompanyName(sourceCompany, 'Entreprise')} a été absorbée.`);
     }
 
     function buildPresetAccessSelections(mode = 'all') {
@@ -1711,17 +2296,19 @@
     function renderAccessModalList() {
       if (!accessModalList) return;
       const query = (accessModalQuery || '').toLowerCase().trim();
-      const sectionsHtml = FEATURE_SECTIONS.map(section => {
+      const sectionsHtml = FEATURE_SECTIONS.map((section, index) => {
         const items = section.items.filter(item => {
           if (!query) return true;
           const haystack = `${item.label} ${section.label} ${item.id}`.toLowerCase();
           return haystack.includes(query);
         });
         if (!items.length) return '';
+        const enabledInSection = items.filter(item => accessSelections[item.id]).length;
+        const isOpen = query ? 'open' : (index === 0 ? 'open' : '');
         const itemsHtml = items.map(item => {
           const checked = accessSelections[item.id] ? 'checked' : '';
           return `
-            <label class="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-3">
+            <label class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-cyan-200 hover:bg-cyan-50/30">
               <div>
                 <p class="text-sm font-semibold text-slate-700">${item.label}</p>
                 <p class="text-xs text-slate-400">${section.label}</p>
@@ -1731,10 +2318,25 @@
           `;
         }).join('');
         return `
-          <div class="space-y-3">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">${section.label}</p>
-            <div class="space-y-3">${itemsHtml}</div>
-          </div>
+          <details class="group rounded-2xl border border-slate-200 bg-slate-50/70" ${isOpen}>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
+              <div>
+                <p class="text-sm font-semibold text-slate-800">${section.label}</p>
+                <p class="mt-1 text-[11px] text-slate-400">${enabledInSection} / ${items.length} activés</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-500">
+                  ${items.length} option${items.length > 1 ? 's' : ''}
+                </span>
+                <svg class="h-4 w-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </summary>
+            <div class="border-t border-slate-200 bg-white/80 p-3">
+              <div class="space-y-3">${itemsHtml}</div>
+            </div>
+          </details>
         `;
       }).filter(Boolean).join('');
 
@@ -2556,6 +3158,7 @@
         if (companyFullAccessButton) companyFullAccessButton.disabled = true;
         if (employeeAccessCard) employeeAccessCard.classList.add('hidden');
         if (customerAdminRecoveryCard) customerAdminRecoveryCard.classList.add('hidden');
+        if (customerMergeAlertCard) customerMergeAlertCard.classList.add('hidden');
         return;
       }
 
@@ -2683,6 +3286,7 @@
       }
 
       renderCustomerAdminRecovery(company, members);
+      renderMergeAlertForSelectedCompany();
     }
 
     function openAccessModal() {
@@ -2947,9 +3551,17 @@
     if (customerAdminRecoveryButton) {
       customerAdminRecoveryButton.addEventListener('click', promoteCustomerMemberToAdmin);
     }
+    if (customerMergeAlertButton) {
+      customerMergeAlertButton.addEventListener('click', openCompanyMergeModal);
+    }
 
     if (accessModalClose) accessModalClose.addEventListener('click', closeAccessModal);
     if (accessModalCancel) accessModalCancel.addEventListener('click', closeAccessModal);
+    if (accessModal) {
+      accessModal.addEventListener('click', (event) => {
+        if (event.target === accessModal) closeAccessModal();
+      });
+    }
     if (accessModalSave) accessModalSave.addEventListener('click', saveAccessChanges);
     if (accessModalSearch) {
       accessModalSearch.addEventListener('input', (event) => {
@@ -3035,6 +3647,14 @@
     if (memberEditModal) {
       memberEditModal.addEventListener('click', (event) => {
         if (event.target === memberEditModal) closeMemberEditModal();
+      });
+    }
+    if (companyMergeModalClose) companyMergeModalClose.addEventListener('click', closeCompanyMergeModal);
+    if (companyMergeCancel) companyMergeCancel.addEventListener('click', closeCompanyMergeModal);
+    if (companyMergeConfirm) companyMergeConfirm.addEventListener('click', executeCompanyMerge);
+    if (companyMergeModal) {
+      companyMergeModal.addEventListener('click', (event) => {
+        if (event.target === companyMergeModal) closeCompanyMergeModal();
       });
     }
 
